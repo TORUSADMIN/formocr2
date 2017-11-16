@@ -1,0 +1,1 @@
+php C:\formocr\FormOcr\src\bin\after_formocr.php
