@@ -4,9 +4,9 @@
  * モデルの基底クラス
  */
 
-require_once(LIB_DIR.'/util/Logger.php');
-require_once(LIB_DIR.'/util/trait/EmptyTrait.php');
-require_once(LIB_DIR.'/util/trait/TrimTrait.php');
+require_once(LIB_DIR.'/utl/Logger.php');
+require_once(LIB_DIR.'/utl/trait/EmptyTrait.php');
+require_once(LIB_DIR.'/utl/trait/TrimTrait.php');
 
 
 class CsvModelBase {

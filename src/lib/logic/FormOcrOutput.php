@@ -65,6 +65,7 @@ class FormOcrOutput
     public function processing() {
 
         $this->logger->cLog("=== Statring output From " . $this->report1CsvPath );
+        $this->logger->cLog('==================================================');
 
         // レポートCSV取得
         $hasHeader = false;
@@ -262,6 +263,7 @@ class FormOcrOutput
         $header = array($this->createHeader());
         // ファイル書き込み
         $this->report1->writeCsv($this->outputDirPath.'/'.$this->outputCsv, $header, $outputBuffer);
+        $this->logger->cLog('=============================================================');
         $this->logger->cLog("==== Processing completed. Output File => " . $this->outputCsv);
     }
 
@@ -513,6 +515,7 @@ class FormOcrOutput
         $header = array($this->createHeader2());
         // ファイル書き込み
         $this->report1->writeCsv($this->outputDirPath.'/'.$this->outputCsv, $header, $outputBuffer);
+        $this->logger->cLog('=============================================================');
         $this->logger->cLog("==== Processing completed. Output File => " . $this->outputCsv);
 
         $countLine = $countLine + 1;

@@ -6,8 +6,8 @@
  */
 
 require_once(LIB_DIR.'/model/CsvModelBase.php');
-require_once(LIB_DIR.'/util/AddressModifier.php');
-require_once(LIB_DIR.'/util/PersonalNameModifier.php');
+require_once(LIB_DIR.'/utl/AddressModifier.php');
+require_once(LIB_DIR.'/utl/PersonalNameModifier.php');
 
 class FormOcrReport1 extends CsvModelBase {
     // AddressModifierクラス

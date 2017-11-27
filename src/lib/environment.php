@@ -14,7 +14,7 @@ if (!defined('READ_ENVIRONMENT')) {
 	define('LIB_DIR', APP_ROOT.'/lib');
 	define('DEF_DIR', LIB_DIR.'/def');
 	define('MODEL_DIR', LIB_DIR.'/model');
-	define('UTIL_DIR', LIB_DIR.'/util');
+	define('UTIL_DIR', LIB_DIR.'/utl');
 	define('LOGIC_DIR', LIB_DIR.'/logic');
 	define('ABSTRACT_DIR', LIB_DIR.'/abstract');
 	define('EXCEPTION_DIR', LIB_DIR.'/exception');
