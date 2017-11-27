@@ -5,8 +5,10 @@
  * Time: 16:46
  */
 
-require_once(__DIR__ . '/../../../ownerreport/OwnerReport/src/lib/environment.php');
-require_once(__DIR__ . '/../lib/logic/FormOcrOutput.php');
+//require_once(__DIR__ . '/../../../ownerreport/OwnerReport/src/lib/environment.php');
+require_once(__DIR__ . '/../lib/environment.php');
+//require_once(__DIR__ . '/../lib/logic/FormOcrOutput.php');
+require_once(LOGIC_DIR . '/FormOcrOutput.php');
 
 $version = "0.01";
 
