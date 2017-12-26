@@ -7,7 +7,7 @@ require_once(UTIL_DIR . '/AddressConfig.php');
 require_once(__DIR__ . '/../model/FormOcrReport1.php');
 require_once(__DIR__ . '/../utl/EstateReceipt.php');
 
-const NUMERIC_PATTERN ='/[0-9]+/u';
+
 
 /**
  * Created by FormOCR.
@@ -27,6 +27,8 @@ class FormOcrOutput
     private $outputDirPath;
 
     private $outputCsv;
+
+    const NUMERIC_PATTERN ='/[0-9]+/u';
 
     public function __construct($report1Csv, $outputDir)
     {
@@ -128,17 +130,18 @@ class FormOcrOutput
                     //１つ前の受付番号
                     //第と号などを取って数値のみにする
                     $oPreReceiptNoNum = mb_convert_kana($preReceiptNo,'a');
-                    $matchPretmp='';
-                    preg_match(NUMERIC_PATTERN, $oPreReceiptNoNum, $matchPretmp);
-                    $oPreReceiptNoNum = $matchPretmp[0];
-
+                    $matchPretmp = array();
+                    if(preg_match(self::NUMERIC_PATTERN, $oPreReceiptNoNum, $matchPretmp)){
+                    	$oPreReceiptNoNum = $matchPretmp[0];
+                    }
                     //今の受付番号
                     $oReceiptNo = $wEstateReceipt->getReceiptNo($oReceiptNo);
                     //第と号などを取って数値のみにする
                     $oReceiptNoNum = mb_convert_kana($oReceiptNo,'a');
-                    $matchtmp = '';
-                    preg_match(NUMERIC_PATTERN, $oReceiptNoNum, $matchtmp);
-                    $oReceiptNoNum = $matchtmp[0];
+                    //$matchtmp = '';
+                    if(preg_match(self::NUMERIC_PATTERN, $oReceiptNoNum, $matchtmp)){
+                    	$oReceiptNoNum = $matchtmp[0];
+                    }
                     //桁数が大きくなったら★をつける
                     if (strlen($oPreReceiptNoNum) < strlen($oReceiptNoNum)){
                         $oReceiptNoErr = '★' . $oReceiptNoErr;
@@ -186,14 +189,22 @@ class FormOcrOutput
             $oPref = $this->report1->getPrefecture($line);
 
             if ($oBukkenAddr<>"") {
+
+				//マーク付ける前にチェックする
+            	$city_master_array = parse_ini_file( "../lib/init/citymaster.ini",false);
+            	$two_chome_array = parse_ini_file("../lib/init/twocyome_master.ini", false);
+            	$oBukkenAddr = $wEstateReceipt->AddressChecker($oPref, $two_chome_array, $oBukkenAddr, $city_master_array);
+
                 $oAddress = $oPref.$oBukkenAddr;            // 住所変換（数字は全角、丁目はハイフン、ハイフンも全角）
                 $addrConfigForChiban = $this->createAddressConfigForChiban();
                 $oAddrTmp1 = $this->addrMod->changeAddress($oAddress, $addrConfigForChiban);
+
                 $cityAndTown = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_CITY);
                 $oAddrTmp = $this->addrMod->splitSikugun($oPref,$cityAndTown);
                 $oCity = str_replace('★','',$oAddrTmp[0]);
                 $oChome1 = str_replace('★','',$oAddrTmp[1]);
                 $oChome2 = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_CHOME);
+
                 //枝番以降を抽出
                 $oAfter = mb_substr($oBukkenAddr,mb_strlen($cityAndTown.$oChome2), mb_strlen($oBukkenAddr)-mb_strlen($cityAndTown.$oChome2));
                 //外筆を除いて枝番と外筆を作る
@@ -208,13 +219,13 @@ class FormOcrOutput
                         $oLotnumber = $oAfter;
                     }
                 }
+
                 //$oLotnumber = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_AFTER);
                 //$oSotofude = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_MNAME);
-
                 if ( $wEstateReceipt->isValidCity($oCity) == false){
                     $oBukkenAddrErr = '★'.$oBukkenAddrErr;
                 }
-                if ( $wEstateReceipt->isValidAfterChome($oChome1) == false){
+                if ( $wEstateReceipt->isValidOaza($oChome1) == false){
                     $oBukkenAddrErr = '★'.$oBukkenAddrErr;
                 }
                 if ( $wEstateReceipt->isValidAfterChome($oChome2) == false){
@@ -230,10 +241,14 @@ class FormOcrOutput
                     if ( $wEstateReceipt->isVaildSotofude($oSotofude) == false){
                         $oBukkenAddrErr = '■'.$oBukkenAddrErr;
                     }
+
                 }
-                if($oBukkenAddrErr=="") {
-                    if ( $wEstateReceipt->isValidBukkenAddr($oAddress) == false){
+                if($oBukkenAddrErr == '' || $oBukkenAddrErr == 'A' || $oBukkenAddrErr == 'R' || $oBukkenAddrErr == 'R  A') {
+                	$split_words_array = ['区', '町', '村', '市'];
+
+                	if ( $wEstateReceipt->isValidBukkenAddr($oBukkenAddr, $city_master_array, $split_words_array) === false){
                         $oBukkenAddrErr = '★'.$oBukkenAddrErr;
+
                     }
                 }
             }

@@ -29,13 +29,15 @@ class EstateReceipt
     //e28690+0からe28f80+F [←-⏏]
     //e291a0+0からe29b80+3[①-⛃]
     //e2ba80あたり[⼂⼅⼇⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼴⼹]
-    //e383b0+0からe383b0＋F[ヰ-ヿ]
+    //e383b0+0からe383b0＋F[ヰ-ヿ]ーーーーーーーーーーーヶ抜き
     //e38080+1からe380b0+F [、-〄][〆-〿] 「々」は除く
     //e38480+5からe384a [ㄅ-ㄬ]
-    const BUKKEN_ADDR_PATTERN = '/[！-，：-＠［-｀｛-､!-,:-@{-~A-Za-zＡ-Ｚａ-ｚｌｉ・．／＊丶“‘’兀」儿冂冖几凵匚匸卜ト卩厂宀尸广彐℀-ℸ⅓-ↂ←-⏏①-⛃⼂⼅亠⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼫⼴⼹ヰ-ヿ、-〄〆-〿ㄅ-ㄬ]/u';
+    const BUKKEN_ADDR_PATTERN = '/[！-，：-＠［-｀｛-､!-,:-@{-~A-Za-zＡ-Ｚａ-ｚｌｉ・．／＊丶“‘’兀」儿冂冖几凵匚匸卜ト卩厂宀尸广彐℀-ℸ⅓-ↂ←-⏏①-⛃⼂⼅亠⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼫⼴⼹ヰ-ヵヷ-ヿ、-〄〆-〿ㄅ-ㄬ]/u';
+    const SIGN_PATTERN = '/[！-，：-＠［-｀｛-､!-,:-@{-~A-Za-zＡ-Ｚａ-ｚｌｉ・．／丶“‘’℀-ℸ⅓-ↂ←-⏏①-⛃⼂⼅亠⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼫⼴⼹ヰ-ヵヷ-ヿ、-〄〆-〿ㄅ-ㄬ]/u';
     //地番エラーパターン２ 「-0」「－０」を含む、ＡからＺを含む、工、ヨ、ユ、フと数字の組み合わせ、最後１字が数字・カタカナ・＊以外
     //const BUKKEN_ADDR_PATTERN2 = '/[Ａ-Ｚ]|[工|ヨ|ユ|フ][０-９]|[０-９][工|ヨ|ユ|フ]|[工|ヨ|ユ|フ]$|[^０-９ァ-ヶ＊]$/u';
-    const BUKKEN_ADDR_PATTERN2 = '/[Ａ-Ｚ]|[工|ヨ|ユ|フ][０-９]|[０-９][工|ヨ|ユ|フ]|[工|ヨ|ユ|フ]$|[^０-９ァ-ヶ＊]$/u';
+    //const BUKKEN_ADDR_PATTERN2 = '/[Ａ-Ｚ]|[工|ヨ|ユ|フ][０-９]|[０-９][工|ヨ|ユ|フ]|[工|ヨ|ユ|フ]$|[^０-９ァ-ヵ＊]$/u';
+    const BUKKEN_ADDR_PATTERN2 = '/[工ヨユフ]/u';
     //丁目エラーパターン２
     //α、σ、工、ヨ、ユ、ヱ、フ、＆、◎、コ、厂、亠、πと数字の組み合わせ
     //最後がハイフン
@@ -67,6 +69,20 @@ class EstateReceipt
     //const PURPOSE_PATTERN = '/[!-/0-9:-@０-９A-Za-zＡ-Ｚａ-ｚァ-ヶ．’℀-ℸ⅓-ↂ←-⏏①-⛃、-〄〆-〿←-⏏⅓-ↂㄅ-ㄬ]|[言己巾伸]|[地日]|[一]$/u';
     const PURPOSE_PATTERN = '/[\!-\/0-9\:-@０-９A-Za-zＡ-Ｚａ-ｚァ-ヶ．’℀-ℸ⅓-ↂ←-⏏①-⛃、-〄〆-〿←-⏏⅓-ↂㄅ-ㄬ]|[言己巾伸：曽っ\[\]\\\^_`丶]|地日|[一]$/u';
 
+    //*******AddressChecker用正規パターン*****************************************
+    const WRONG_CITY_PATTERN1 = '/^([^一-龠ァ-ヶぁ-ん＊]+)([一-龠ァ-ヶぁ-んー]+)/u';
+    const WRONG_CITY_PATTERN2 = '/^(＊市)(.+区)([一-龠ァ-ヶぁ-んー]+)/u';
+    const WRONG_CITY_PATTERN3 = '/^(＊)(.+区)([一-龠ァ-ヶぁ-んー]+)/u';
+    const WRONG_CHOME_PATTERN1 = '/(^[０-９]+)([^丁]+)(目)(.*)/u';
+    //const WRONG_CHOME_PATTERN2 = '/(^[０-９]+丁)([^目０-９]+)([０-９]+)/u';
+    //const WRONG_CHOME_PATTERN2 = '/(^[０-９]+丁)([自|§|彎|且|圏|溷|日|ヨ|孱|餡|稷|冒|溷|曷|黨|歸|濛|釋|冐])([０-９]+)/u';//「目」の誤字
+    const WRONG_CHOME_PATTERN2 = '/(^[０-９]+丁)([一-龠|§])([０-９]+)/u';//「目」の誤字
+    const WRONG_ADDRESS_PATTERN1 = '/(^[一-龠ァ-ヶぁ-ん]+)([０-９]+)(丁)(.+)(目)([０-９]+)/u';
+
+    //****************************************************************************
+
+    private $addrMod;
+
     /**
      * 受付番号が正しいかチェックする
      * @param $str
@@ -91,13 +107,15 @@ class EstateReceipt
      * @return mixed
      */
     public function getReceiptNo($str) {
-        preg_match(self::RECEIPTNO_PATTERN, $str,$match);
-        if ($match[0] == null) {
-            $strtmp = str_replace('【','',$str);
-            $strtmp = str_replace('】','',$strtmp);
-            return $strtmp;
-        } else {
-            return $match[0];
+        if(preg_match(self::RECEIPTNO_PATTERN, $str,$match)){
+	        if ($match[0] == null) {
+	            $strtmp = str_replace('【','',$str);
+	            $strtmp = str_replace('】','',$strtmp);
+	            return $strtmp;
+	        } else {
+	        	//echo $match[0] . '\\n';
+	           return $match[0];
+	        }
         }
         //preg_match(self::RECEIPTNO_PATTERN, $str, $match);
         //return $match[0];
@@ -211,11 +229,7 @@ class EstateReceipt
      */
     public function isVaildSotofude($str){
         if (mb_strpos($str,"外") >= 0) {
-            if (preg_match(self::SOTOFUDE_PATTERN, $str)==true) {
-                preg_match(self::SOTOFUDE_PATTERN, $str, $match);
-                if ($match[0] == null){
-                    return false;
-                }
+            if (preg_match(self::SOTOFUDE_PATTERN, $str, $match)) {
                 return true;
             } else {
                 return false;
@@ -226,17 +240,21 @@ class EstateReceipt
         //return preg_match(self::GROUP_PATTERN,$str);
     }
 
+
+
+
     /**
      * 外筆を取得　外１
      * @param $str
      * @return mixed
      */
     public function getSotofude($str){
-        preg_match(self::SOTOFUDE_PATTERN, $str, $match);
-        if ($match[0] == null) {
-            return $str;
-        } else {
-            return $match[0];
+        if(preg_match(self::SOTOFUDE_PATTERN, $str, $match)){
+	        if ($match[0] == null) {
+	            return $str;
+	        } else {
+	            return $match[0];
+	        }
         }
     }
 
@@ -254,33 +272,386 @@ class EstateReceipt
         }
     }
 
+
+
+    /**
+     * 地番をチェックする前に、「：」「＊」で始まり
+     * 「丁目」のところは問題がある場合、地番修正
+     * 目的：AddressModifierがちゃんとpref city after分割できるように
+     * --------------from lixin-------------------------------
+     * @param unknown $str
+     */
+    public function AddressChecker($oPref, $two_chome_array, $str, $city_master_array){
+
+    	$this->addrMod = new AddressModifier();
+    	//$city_master_array = parse_ini_file("../lib/init/citymaster.ini", false);
+    	$wrong_address_tmp = $this->addrMod->changeAddress($str);
+    	$wrong_address_city = $this->addrMod->getParts($wrong_address_tmp, AddressModifier::IDX_PARTS_CITY);//市区町村取得
+    	//**************************  city and town  *****************************************
+    	//市区町村チェック
+    	//：横浜市保土ヶ谷区川島町８０５－２ 　　　一番前のノイズを取り除く　ただし先頭は＊の場合無視　あと修正するから·
+    	if(preg_match(self::WRONG_CITY_PATTERN1, $wrong_address_city, $match1)){
+    		if(count($match1) === 3){
+    			$first_noise = $match1[1];
+    			$str = str_replace($first_noise, '', $str);//地番先頭のノイズ(漢字かな以外の部分)
+    		}
+    	}
+    	//第一次修正してから、もう一度AddressModifierで地番分割
+    	$wrong_address_tmp = $this->addrMod->changeAddress($str);
+    	$wrong_address_city = $this->addrMod->getParts($wrong_address_tmp, AddressModifier::IDX_PARTS_CITY);//市区町村取得
+    	$wrong_address_after = $this->addrMod->getParts($wrong_address_tmp, AddressModifier::IDX_PARTS_AFTER);
+    	//市区町村の中にもしnoiseがあったら、取り除く　例：横’浜市港北:区
+    	if(mb_strpos($wrong_address_city, '市') > 0){
+    		$tmp = explode('市', $wrong_address_city);
+    		if(count($tmp) === 2){
+    			if(preg_match(self::SIGN_PATTERN, $tmp[0], $match_noise)){
+    				if(count($match_noise) === 1){
+    					$changed_address_city = str_replace($match_noise[0], '', $wrong_address_city);
+    					$str = str_replace($wrong_address_city, $changed_address_city, $str);
+    				}
+    			}
+    		}
+    	}elseif(mb_strpos($wrong_address_city, '郡') > 0){
+    		$tmp = explode('郡', $wrong_address_city);
+    		if(count($tmp) === 2){
+    			if(preg_match(self::SIGN_PATTERN, $tmp[0], $match_noise)){
+    				if(count($match_noise) === 1){
+    					$changed_address_city = str_replace($match_noise[0], '', $wrong_address_city);
+    					$str = str_replace($wrong_address_city, $changed_address_city, $str);
+    				}
+    			}
+    		}
+    	}
+    	if(mb_strpos($wrong_address_city, '区') > 0){
+    		$tmp = explode('区', $wrong_address_city);
+    		if(count($tmp) === 2){
+    			if(preg_match(self::SIGN_PATTERN, $tmp[0], $match_noise)){
+    				if(count($match_noise) === 1){
+    					$changed_address_city = str_replace($match_noise[0], '', $wrong_address_city);
+    					$str = str_replace($wrong_address_city, $changed_address_city, $str);
+    				}
+    			}
+    		}
+    	}elseif(mb_strpos($wrong_address_city, '町') > 0){
+    		$tmp = explode('町', $wrong_address_city);
+    		if(count($tmp) === 2){
+    			if(preg_match(self::SIGN_PATTERN, $tmp[0], $match_noise)){
+    				if(count($match_noise) === 1){
+    					$changed_address_city = str_replace($match_noise[0], '', $wrong_address_city);
+    					$str = str_replace($wrong_address_city, $changed_address_city, $str);
+    				}
+    			}
+    		}
+    	}elseif(mb_strpos($wrong_address_city, '村') > 0){
+    		$tmp = explode('村', $wrong_address_city);
+    		if(count($tmp) === 2){
+    			if(preg_match(self::SIGN_PATTERN, $tmp[0], $match_noise)){
+    				if(count($match_noise) === 1){
+    					$changed_address_city = str_replace($match_noise[0], '', $wrong_address_city);
+    					$str = str_replace($wrong_address_city, $changed_address_city, $str);
+    				}
+    			}
+    		}
+    	}
+    	//******************************    after   *************************************
+    	//数字と丁の間のチェック
+    	//２桁丁目以上のmaster iniファイルを参照し、二桁以上の丁目がある都道府県の地番の場合、丁目チェックしない
+    	//横浜市保土ケ谷区桜ケ丘２：「目３９８－１－４６４
+		//two_chome_array  二桁以上の丁目を含む都道府県リスト
+		if(!array_search($oPref, $two_chome_array)){
+	    	if(preg_match(self::WRONG_CHOME_PATTERN1, $wrong_address_after, $match2)){
+	    		if(count($match2) === 5){
+	    			$right_chome = $match2[1] . '丁' . $match2[3];
+	    			$right_after = $match2[4];
+	    			$city = $this->addrMod->getParts($wrong_address_tmp, AddressModifier::IDX_PARTS_CITY);
+	    			$mName = $this->addrMod->getParts($wrong_address_tmp, AddressModifier::IDX_PARTS_MNAME);
+	    			$roomNo = $this->addrMod->getParts($wrong_address_tmp, AddressModifier::IDX_PARTS_ROOM_NO);
+	    			$str = $city . $right_chome . $right_after . $mName . $roomNo;
+	    		}
+	    	}
+		}
+
+    	//丁と目の間のチェック
+    	//横浜市鶴見区鶴見中央２丁日１８６７－２４
+    	if(preg_match(self::WRONG_CHOME_PATTERN2, $wrong_address_after, $match3)){
+    		if(count($match3) === 4){
+    			$wrong_chome = $match3[1] . $match3[2];
+    			$right_chome = $match3[1] . '目';
+    			$str = str_replace($wrong_chome, $right_chome, $str);
+    		}
+    	}
+
+    	//「：」「丁」「目」の問題が終わったら、「＊市」を解決
+    	//「丁目」があったら、大体AddressModifierが丁目で分割できる
+    	$changed_one_address = $str;
+    	$changed_one_address_tmp = $this->addrMod->changeAddress($changed_one_address);
+    	//「＊市」があったらcity_master参照　市不明区がある場合---できれば市の名を付ける
+    	//例えば　＊市保土ヶ谷区権太坂１丁目２５８－１１－２０７
+    	$city_with_star = $this->addrMod->getParts($changed_one_address_tmp, AddressModifier::IDX_PARTS_CITY);
+    	if(preg_match(self::WRONG_CITY_PATTERN2, $city_with_star, $match_star_city1)){
+    		if(count($match_star_city1) === 4){
+    			$ku_name = $match_star_city1[2];//区名取得
+    			$star_pattern = '/^(.+市)(' . $ku_name . ')$/u';
+    			$matching_result = preg_grep($star_pattern, $city_master_array);//city_masterに検索
+    			//区名でcity_masterマッチするので、重複の場合を排除、ただ一つの結果だけ取得
+    			if(count($matching_result) === 1){
+    				$right_city_last_array = array_values($matching_result);
+    				$pattern_star = '＊市' . $ku_name;
+    				$right_city_last = $right_city_last_array[0];
+    				$str = str_replace($pattern_star, $right_city_last, $str);
+    				return $str;
+    			}
+    		}
+    	}elseif(preg_match(self::WRONG_CITY_PATTERN3, $city_with_star, $match_star_city2)){//＊＊都筑区南０１田の場合
+    		if(count($match_star_city2) === 4){
+    			$ku_name = $match_star_city2[2];//区名取得
+    			$star_pattern = '/(' . $ku_name . ')$/u';
+    			$matching_result = preg_grep($star_pattern, $city_master_array);//city_masterに検索
+    			if(count($matching_result) === 1){
+    				$right_city_last_array = array_values($matching_result);
+    				$pattern_star = '＊' . $ku_name;
+    				$right_city_last = $right_city_last_array[0];
+    				$str = str_replace($pattern_star, $right_city_last, $str);
+    				return $str;
+    			}
+    		}
+    	}
+    	//チェックしてから、もし市区町村不十分の場合citymaster参照する　結果が一つしかないならば、置き換える
+    	//例：浜市港北区樽町３丁目９６５－１－２－７１１
+    	if(mb_strpos($str, '区')){//丿崎市宮前区水沢３丁目２７６８－６外１
+    		$last_tmp = explode('区', $str);//丿崎市宮前　水沢３丁目２７６８－６外１
+    		if(count($last_tmp) == 2){
+    			$first_half_city = $last_tmp[0];
+    			$unknown_city = $first_half_city . '区';//丿崎市宮前区
+    			if(mb_strpos($unknown_city, '市')){
+    				$last_city_tmp = explode('市', $unknown_city);//丿崎  宮前区
+    				if(count($last_city_tmp) === 2){
+    					$maybe_right_ku = $last_city_tmp[1];//宮前区
+    					$city_pattern1 = '/' . $maybe_right_ku . '$/u';
+    					$matching_result_city = preg_grep($city_pattern1, $city_master_array);
+    				}
+    			}else{
+	    			$city_pattern = '/' . $unknown_city . '$/u';
+	    			$matching_result_city = preg_grep($city_pattern, $city_master_array);
+    			}
+    			if(count($matching_result_city) === 1){
+    				$city_value_array = array_values($matching_result_city);
+    				$right_city_value = $city_value_array[0];
+    				$str = str_replace($unknown_city, $right_city_value, $str);
+    			}
+    		}
+    	}elseif(mb_strpos($str, '町')){
+    		$last_tmp = explode('町', $str);
+    		if(count($last_tmp) == 2){
+    			$first_half_city = $last_tmp[0];
+    			$unknown_city = $first_half_city . '町';
+    			if(mb_strpos($unknown_city, '郡')){
+    				$last_city_tmp = explode('郡', $unknown_city);
+    				if(count($last_city_tmp) === 2){
+    					$maybe_right_machi = $last_city_tmp[1];
+	    				$city_pattern1 = '/' . $maybe_right_machi . '$/u';
+	    				$matching_result_city = preg_grep($city_pattern1, $city_master_array);
+    				}
+    			}else{
+	    			$city_pattern = '/' . $unknown_city . '$/u';
+	    			$matching_result_city = preg_grep($city_pattern, $city_master_array);
+    			}
+    			if(count($matching_result_city) === 1){
+    				$city_value_array = array_values($matching_result_city);
+    				$right_city_value = $city_value_array[0];
+    				$str = str_replace($unknown_city, $right_city_value, $str);
+    			}
+    		}
+    	}elseif(mb_strpos($str, '村')){
+    		$last_tmp = explode('村', $str);
+    		if(count($last_tmp) == 2){
+    			$first_half_city = $last_tmp[0];
+    			$unknown_city = $first_half_city . '村';
+    			if(mb_strpos($unknown_city, '郡')){
+    				$last_city_tmp = explode('郡', $unknown_city);
+    				if(count($last_city_tmp) === 2){
+    					$maybe_right_son = $last_city_tmp[1];
+    					$city_pattern1 = '/' . $maybe_right_son . '$/u';
+    					$matching_result_city = preg_grep($city_pattern1, $city_master_array);
+    				}
+    			}else{
+	    			$city_pattern = '/' . $unknown_city . '$/u';
+	    			$matching_result_city = preg_grep($city_pattern, $city_master_array);
+    			}
+    			if(count($matching_result_city) === 1){
+    				$city_value_array = array_values($matching_result_city);
+    				$right_city_value = $city_value_array[0];
+    				$str = str_replace($unknown_city, $right_city_value, $str);
+    			}
+    		}
+    	}elseif(mb_strpos($str, '市')){
+    		$last_tmp = explode('市', $str);
+    		if(count($last_tmp) == 2){
+    			$first_half_city = $last_tmp[0];
+    			$unknown_city = $first_half_city . '市';
+    			$city_pattern = '/' . $unknown_city . '$/u';
+    			$matching_result_city = preg_grep($city_pattern, $city_master_array);
+    			if(count($matching_result_city) === 1){
+    				$city_value_array = array_values($matching_result_city);
+    				$right_city_value = $city_value_array[0];
+    				$str = str_replace($unknown_city, $right_city_value, $str);
+    			}
+    		}
+    	}
+    	//前処理　地番最終チェック　丁目の間にノイズがある場合削除する
+    	//例：横浜市りば区大字２３丁＆’目２３...
+    	if(preg_match(self::WRONG_ADDRESS_PATTERN1, $str, $match_address)){
+    		if(count($match_address) === 7){
+    			$last_noise = $match_address[4];//丁と目の間のノイズ取り除く
+    			$str = str_replace($last_noise, '', $str);
+    		}
+    	}
+    	return $str;
+    }
+
     /**
      * 地番が正しいかチェックする
      * @param $str
      * @return int
      */
-    public function isValidBukkenAddr($str) {
+    public function isValidBukkenAddr($str, $city_master_array, $split_words_array) {
         //preg_match(self::BUKKEN_ADDR_PATTERN, $str, $match);
-        if (preg_match(self::BUKKEN_ADDR_PATTERN, $str)==false){
-            preg_match(self::BUKKEN_ADDR_PATTERN2, $str, $match);
-            if (preg_match(self::BUKKEN_ADDR_PATTERN2, $str)==false){
-                return true;
-            } else {
-                return false;
-            }
-            //return true;
-        } else {
-            return false;
-        }
+        //最後地番チェック　
+        /*
+         *areamasterでエリア参照し、地番のエリアチェック
+         *結果がただ一つの場合後チェックへ進む
+         *                      後チェックは違法符号チェック
+         *結果が複数あり、あるいはない場合false
+         *
+         *地番の最終チェックパタン　丁目あるなし　外筆あるなし
+         *以外の場合全部マークつける
+         *
+    	 *地番全体に対して、最終チェック。
+    	 *丁目を含むかどうか、正規パタンでエラーマークつける
+    	 *
+    	 *注意：西条市朔日市１２５－１７ 二つの「市」
+    	 *      市川市北国分１丁目２５０１－１６外１
+    	 *		市川市市川１丁目６５２－１外２
+    	 */
+    	$last_check_flag = false;
+		for($k=0; $k<count($split_words_array); $k++){
+
+	    	if(mb_strpos($str, $split_words_array[$k]) >= 0){
+
+	    		$last_tmp = explode($split_words_array[$k], $str);
+
+	    		if(count($last_tmp) >= 2){
+	    			$first_half_city = $last_tmp[0];
+	    			//市川市の場合  市川市北国分１丁目２５０１－１６外１
+	    			if(count($last_tmp) === 3 && $split_words_array[$k] === '市' && empty($first_half_city) && $last_tmp[1] === '川'){
+						$unknown_city = '市川市';
+	    			}elseif(count($last_tmp) === 3 && !empty($first_half_city)){//西条市朔日市１２５－１７ 二つの「市」
+	    				$unknown_city = $first_half_city . $split_words_array[$k];
+	    			}//市川市市川１丁目６５２－１外２
+	    			elseif(count($last_tmp) === 4 && $split_words_array[$k] === '市' && empty($first_half_city) && empty($last_tmp[2]) && $last_tmp[1] === '川'){
+	    				$unknown_city = '市川市';
+	    			}else{
+	    				$unknown_city = $first_half_city . $split_words_array[$k];
+	    			}
+	    			$city_pattern = '/^' . $unknown_city . '$/u';//エリアマスターで絶対検索
+	    			$matching_result_city = preg_grep($city_pattern, $city_master_array);
+	    			//citymaster参照して、検索結果ある場合誤字ないと確信
+	    			if(count($matching_result_city) > 0){
+
+	    				//市川市の場合  市川市北国分１丁目２５０１－１６外１
+	    				if(count($last_tmp) === 3 && $split_words_array[$k] === '市' && empty($first_half_city) && $last_tmp[1] === '川'){
+	    					$second_half_city = $last_tmp[2];
+	    				}elseif(count($last_tmp) === 3 && !empty($first_half_city)){//西条市朔日市１２５－１７ 二つの「市」
+	    					$second_half_city = $last_tmp[1] . $split_words_array[$k] . $last_tmp[2];
+	    				}//市川市市川１丁目６５２－１外２
+	    				elseif(count($last_tmp) === 4 && $split_words_array[$k] === '市' && empty($first_half_city) && empty($last_tmp[2]) && $last_tmp[1] === '川'){
+	    					$second_half_city = '市' . $last_tmp[3];
+	    				}elseif(count($last_tmp) === 2){
+	    					$second_half_city = $last_tmp[1];
+	    				}
+	    				//後半チェック
+	    				//大字名　丁目　枝番　外筆
+	    				//大字名　丁目　枝番
+	    				//大字名　枝番　外筆
+	    				//大字名　枝場
+	    				//丁目　枝番　外筆
+	    				//丁目　枝番
+	    				//枝番　外筆
+	    				//枝番
+	    				if(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]+|[一二三四五六七八九十]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
+	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+    								$last_check_flag = true;
+    								break;
+	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]+|[一二三四五六七八九十]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
+	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+	    							$last_check_flag = true;
+		    						break;
+	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
+	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+	    							$last_check_flag = true;
+	    							break;
+	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
+	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+	    							$last_check_flag = true;
+	    							break;
+	    				}elseif(preg_match('/(^[０-９]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
+	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+	    							$last_check_flag = true;
+	    							break;
+	    				}elseif(preg_match('/(^[０-９]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
+	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+	    							$last_check_flag = true;
+	    							break;
+	    				}elseif(preg_match('/(^[０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
+	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+	    							$last_check_flag = true;
+	    							break;
+	    				}elseif(preg_match('/(^[０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
+	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+	    							$last_check_flag = true;
+	    							break;
+	    				}
+	    			}
+	    		}
+	    	}
+		}
+		return $last_check_flag;
     }
+    /**
+     *
+     * 大字名チェック-------「丁目」前　「市区町村」後
+     * 茅ヶ崎　防ぐために
+     * from lixin
+     * @param unknown $str
+     */
+    public function isValidOaza($str){
+
+    	if (preg_match(self::BUKKEN_ADDR_PATTERN, $str)==false) {
+    		//preg_match(self::CHOME_PATTERN, $str, $match);
+    		if (preg_match(self::CHOME_PATTERN, $str) == false) {
+    			return true;
+    		} else {
+    			return false;
+    		}
+    	} else {
+    		return false;
+    	}
+	}
 
     public function isValidAfterChome($str){
-        preg_match(self::BUKKEN_ADDR_PATTERN, $str, $match);
+        //preg_match(self::BUKKEN_ADDR_PATTERN, $str, $match);
         if (preg_match(self::BUKKEN_ADDR_PATTERN, $str)==false) {
-            preg_match(self::CHOME_PATTERN, $str, $match);
+            //preg_match(self::CHOME_PATTERN, $str, $match);
             if (preg_match(self::CHOME_PATTERN, $str) == false) {
                 return true;
-
             } else {
                 return false;
             }
