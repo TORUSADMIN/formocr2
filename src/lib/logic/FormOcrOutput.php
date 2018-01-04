@@ -113,13 +113,16 @@ class FormOcrOutput
 
             //受付番号
             $oReceiptNo = $this->report1->getReceiptNo($line);
+			//$this->logger->cLog($oReceiptNo);
 
             //都道府県を取得
             $oPref = $this->report1->getPrefecture($line);
 
 
             if($oReceiptNo!== null or $oReceiptNo !== "") {
+            	//$this->logger->cLog($oReceiptNo);
                 $oReceiptNo = $wEstateReceipt->getReceiptNo($oReceiptNo);
+                //$this->logger->cLog($oReceiptNo);
             }
             //受付番号エラー
             $oReceiptNoErr = $this->report1->getReceiptNo_Err($line);

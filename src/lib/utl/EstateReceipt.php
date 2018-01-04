@@ -10,7 +10,7 @@
 class EstateReceipt
 {
     //受付番号
-    const RECEIPTNO_PATTERN = '/第[０-９]*－*[（|\(]?[ぁ-ん]?[）|\)]?号/u';
+	const RECEIPTNO_PATTERN = '/第[０-９]*[ー－−-]*[（|\(]?[ぁ-ん]?[）|\)]?号/u';
     //受付日
     //const RECEIPTDATE_PATTERN = '/(1[0-2]{1}|[1-9]{1})月(3[0-1]{1}|2[0-9]{1}|[1-9]{1})日受付/u';
     const RECEIPTDATE_PATTERN = '/(1[0-2]{1}|[1-9]{1})月(3[0-1]{1}|2[0-9]{1}|1[0-9]{1}|0[0-9]{1}|[1-9]{1})日/u';
@@ -107,15 +107,20 @@ class EstateReceipt
      * @return mixed
      */
     public function getReceiptNo($str) {
-        if(preg_match(self::RECEIPTNO_PATTERN, $str,$match)){
-	        if ($match[0] == null) {
+
+        if(preg_match(self::RECEIPTNO_PATTERN, $str, $match)){
+        	return $match[0];
+
+/*
+        	if ($match[0] == null) {
 	            $strtmp = str_replace('【','',$str);
 	            $strtmp = str_replace('】','',$strtmp);
 	            return $strtmp;
 	        } else {
-	        	//echo $match[0] . '\\n';
 	           return $match[0];
-	        }
+	        }*/
+        }else{
+        	return $str;
         }
         //preg_match(self::RECEIPTNO_PATTERN, $str, $match);
         //return $match[0];
