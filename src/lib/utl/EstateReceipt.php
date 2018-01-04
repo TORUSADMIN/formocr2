@@ -29,10 +29,10 @@ class EstateReceipt
     //e28690+0からe28f80+F [←-⏏]
     //e291a0+0からe29b80+3[①-⛃]
     //e2ba80あたり[⼂⼅⼇⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼴⼹]
-    //e383b0+0からe383b0＋F[ヰ-ヿ]ーーーーーーーーーーーヶ抜き
+    //e383b0+0からe383b0＋F[ヰ-ヿ]ーーーーーーーーーーー ヶ抜き ン抜き
     //e38080+1からe380b0+F [、-〄][〆-〿] 「々」は除く
     //e38480+5からe384a [ㄅ-ㄬ]
-    const BUKKEN_ADDR_PATTERN = '/[！-，：-＠［-｀｛-､!-,:-@{-~A-Za-zＡ-Ｚａ-ｚｌｉ・．／＊丶“‘’兀」儿冂冖几凵匚匸卜ト卩厂宀尸广彐℀-ℸ⅓-ↂ←-⏏①-⛃⼂⼅亠⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼫⼴⼹ヰ-ヵヷ-ヿ、-〄〆-〿ㄅ-ㄬ]/u';
+    const BUKKEN_ADDR_PATTERN = '/[！-，：-＠［-｀｛-､!-,:-@{-~A-Za-zＡ-Ｚａ-ｚｌｉ・．／＊丶“‘’兀」儿冂冖几凵匚匸卜ト卩厂宀尸广彐℀-ℸ⅓-ↂ←-⏏①-⛃⼂⼅亠⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼫⼴⼹ヰ-ヲヴ-ヵヷ-ヿ、-〄〆-〿ㄅ-ㄬ]/u';
     const SIGN_PATTERN = '/[！-，：-＠［-｀｛-､!-,:-@{-~A-Za-zＡ-Ｚａ-ｚｌｉ・．／丶“‘’℀-ℸ⅓-ↂ←-⏏①-⛃⼂⼅亠⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼫⼴⼹ヰ-ヵヷ-ヿ、-〄〆-〿ㄅ-ㄬ]/u';
     //地番エラーパターン２ 「-0」「－０」を含む、ＡからＺを含む、工、ヨ、ユ、フと数字の組み合わせ、最後１字が数字・カタカナ・＊以外
     //const BUKKEN_ADDR_PATTERN2 = '/[Ａ-Ｚ]|[工|ヨ|ユ|フ][０-９]|[０-９][工|ヨ|ユ|フ]|[工|ヨ|ユ|フ]$|[^０-９ァ-ヶ＊]$/u';
@@ -48,6 +48,7 @@ class EstateReceipt
     //0390 CE90から Α-ω
     //const CHOME_PATTERN = '/l|α|σ|工|ヨ|ユ|ヱ|フ|＆|正|◎|コ|厂|亠|π|－$|－０|－丁|コ目|了|丁且|丁圏|丁§|丁自|倡|眉|[Ａ-Ｚ]|[ァ-ヶ]|[Α-ω]/u';
     const CHOME_PATTERN = '/l|α|σ|工|ヨ|ユ|ヱ|フ|＆|◎|コ|厂|亠|π|－$|－０|－丁|コ目|了|丁且|丁圏|丁§|丁自|倡|眉|[Ａ-Ｚ]|[コトフマムレヲン]|[Α-ω]/u';
+    const CHOME_PATTERN1 = '/l|α|σ|工|ヨ|ユ|ヱ|フ|＆|◎|コ|厂|亠|π|－$|－０|－丁|コ目|了|丁且|丁圏|丁§|丁自|倡|眉|[Ａ-Ｚ]|[コトフマムヲ]|[Α-ω]/u';
     //枝番号OKパターン　先頭は数値
     const EDA_PATTERN = '/^[０-９]/u';
     const EDA_OK_PATTERN = '/^((甲|乙|／|－|[０-９]))+$/u';
@@ -120,11 +121,35 @@ class EstateReceipt
 	           return $match[0];
 	        }*/
         }else{
+        	if(mb_strpos($str, '【') >= 0){
+        		$str = str_replace('【', '', $str);
+        	}
+        	if(mb_strpos($str, '】') >= 0){
+        		$str = str_replace('】', '', $str);
+        	}
         	return $str;
         }
         //preg_match(self::RECEIPTNO_PATTERN, $str, $match);
         //return $match[0];
     }
+
+    /**
+     * ファイル名の受付の月から受付日の月を変更する
+     * @param unknown $str
+     */
+    public function changeReceiptMonth($oReceiptMonth, $oReceiptDate){
+
+    	if(mb_strpos($oReceiptDate, '月') >= 0){
+    		$date_tmp = explode('月', $oReceiptDate);
+    		if(count($date_tmp) === 2){
+    			if($date_tmp[0] !== $oReceiptMonth){
+    				return $oReceiptMonth . '月' . $date_tmp[1];
+    			}
+    		}
+    	}
+    	return $oReceiptDate;
+    }
+
 
     /**
      * 受付日が正しいかチェックする
@@ -641,7 +666,8 @@ class EstateReceipt
 
     	if (preg_match(self::BUKKEN_ADDR_PATTERN, $str)==false) {
     		//preg_match(self::CHOME_PATTERN, $str, $match);
-    		if (preg_match(self::CHOME_PATTERN, $str) == false) {
+
+    		if (preg_match(self::CHOME_PATTERN1, $str) == false) {
     			return true;
     		} else {
     			return false;
@@ -652,6 +678,7 @@ class EstateReceipt
 	}
 
     public function isValidAfterChome($str){
+
         //preg_match(self::BUKKEN_ADDR_PATTERN, $str, $match);
         if (preg_match(self::BUKKEN_ADDR_PATTERN, $str)==false) {
             //preg_match(self::CHOME_PATTERN, $str, $match);

@@ -79,10 +79,16 @@ class FormOcrOutput
         $oReceiptNo="";
         $countLine = 0;
 
+
+
         foreach ($csv as $line) {
             if (count($line) == 1){
                 continue;
             }
+
+            //$this->logger->cLog($key);
+            //$this->logger->cLog($line);
+
             if ($hasHeader == true){
                 if($countLine==0){
                     $countLine = $countLine + 1;
@@ -157,7 +163,30 @@ class FormOcrOutput
             };
             //受付日
             $oReceiptDateTmp = $this->report1->getReceiptDate($line);
+            //$this->logger->cLog($oReceiptDateTmp);
+
             $oReceiptDate = mb_substr($oReceiptDateTmp,0, mb_strpos($oReceiptDateTmp,"日")+1);
+
+			/*
+			 *ファイル名から月を取得し、受け日の月を変更する
+			 *埼玉県_越谷_201711 --> 11取得
+			 *目的:111月--->11月
+			 * */
+			$fileName = $this->report1->getFilename($line);
+			//$this->logger->cLog($fileName);//埼玉県_越谷_201711
+			$fileNameTmp = explode('_', $fileName);
+			//$this->logger->cLog($fileNameTmp);//201711 201708...
+			if(count($fileNameTmp) === 3){
+				$yearAndMonth = $fileNameTmp[2];
+				$oReceiptMonth = substr($yearAndMonth, -2);//11 08 01...
+				if(mb_strpos($oReceiptMonth, '0') === 0){
+					$oReceiptMonth = str_replace('0', '', $oReceiptMonth);
+				}
+			}
+			if(!empty($oReceiptMonth)){
+				$oReceiptDate = $wEstateReceipt->changeReceiptMonth($oReceiptMonth, $oReceiptDate);
+			}
+
             //受付日エラー
             $oReceiptDateErr = $this->report1->getReceiptDate_Err($line);
             if ($wEstateReceipt->isValidReceiptDate($oReceiptDate) === false) {
@@ -165,6 +194,9 @@ class FormOcrOutput
             } else {
                 $oReceiptDate = $wEstateReceipt->getReceiptDate($oReceiptDate);
             }
+
+            //$this->logger->cLog($oReceiptDate);
+
             //順序（単独）、（連続）、（連先）
             $oReceiptSeq = $this->report1->getReceiptSeq($line);
             //順序（単独）、（連続）、（連先）エラー
@@ -222,9 +254,9 @@ class FormOcrOutput
                         $oLotnumber = $oAfter;
                     }
                 }
-
                 //$oLotnumber = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_AFTER);
                 //$oSotofude = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_MNAME);
+
                 if ( $wEstateReceipt->isValidCity($oCity) == false){
                     $oBukkenAddrErr = '★'.$oBukkenAddrErr;
                 }
@@ -277,6 +309,25 @@ class FormOcrOutput
             $countLine = $countLine +1;
 
         }
+
+        //$this->logger->cLog($outputBuffer);
+		/*
+		 * ここで第一回チェック終わりました
+		 *
+		 * 受付日に対し
+		 * -----後処理-----
+		 * ここから、受付番号の修正を始める
+		 * 前後を見て、前と後ろ同じの場合、真中の受付日付を修正する　マークを保留
+		 * 連番間違ったら、そのまま(一番と最後を無視)
+		 * 例：11月1日  11月111日  11月1日-->11月1日  11月1日  11月1日
+		 * ----------------
+		 * */
+		for($k=1; $k<count($outputBuffer)-1; $k++){
+			if($outputBuffer[$k-1][2] === $outputBuffer[$k+1][2]){
+				$outputBuffer[$k][2] = $outputBuffer[$k+1][2];
+			}
+		}
+		//$this->logger->cLog($outputBuffer);
 
         $header = array($this->createHeader());
         // ファイル書き込み
