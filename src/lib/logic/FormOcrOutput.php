@@ -325,6 +325,7 @@ class FormOcrOutput
 		for($k=1; $k<count($outputBuffer)-1; $k++){
 			if($outputBuffer[$k-1][2] === $outputBuffer[$k+1][2]){
 				$outputBuffer[$k][2] = $outputBuffer[$k+1][2];
+				$outputBuffer[$k][3] = '';
 			}
 		}
 		//$this->logger->cLog($outputBuffer);
