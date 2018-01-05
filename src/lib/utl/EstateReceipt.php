@@ -11,9 +11,9 @@ class EstateReceipt
 {
     //受付番号
 	const RECEIPTNO_PATTERN = '/第[０-９]*[ー－−-]*[（|\(]?[ぁ-ん]?[）|\)]?号/u';
-	const RECEIPTNO_PATTERN2 = '/^第([０-９]{5,5})([ー－−-])([（|\(])([ぁ-ん])([）|\)])号$/u';
-	const RECEIPTNO_PATTERN4 = '/^第([０-９]{5,5})([ー－−-])([０-９])号$/u';
-	const RECEIPTNO_PATTERN3 = '/^第([０-９]{5,5})号$/u';
+	const RECEIPTNO_PATTERN2 = '/^第([０-９]{5,})([ー－−-])([（|\(])([ぁ-ん])([）|\)])号$/u';
+	const RECEIPTNO_PATTERN4 = '/^第([０-９]{5,})([ー－−-])([０-９])号$/u';
+	const RECEIPTNO_PATTERN3 = '/^第([０-９]{5,})号$/u';
 
 
     //受付日
@@ -38,6 +38,7 @@ class EstateReceipt
     //e38080+1からe380b0+F [、-〄][〆-〿] 「々」は除く
     //e38480+5からe384a [ㄅ-ㄬ]
     const BUKKEN_ADDR_PATTERN = '/[！-，：-＠［-｀｛-､!-,:-@{-~A-Za-zＡ-Ｚａ-ｚｌｉ・．／＊丶“‘’兀」儿冂冖几凵匚匸卜ト卩厂宀尸广彐℀-ℸ⅓-ↂ←-⏏①-⛃⼂⼅亠⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼫⼴⼹ヰ-ヲヴ-ヵヷ-ヿ、-〄〆-〿ㄅ-ㄬ]/u';
+    const BUKKEN_ADDR_PATTERN_WITHOUT_KAKO = '/[！-\'*-,：-＠［-｀｛-､!-,:-@{-~A-Za-zＡ-Ｚａ-ｚｌｉ・．／＊丶“‘’兀」儿冂冖几凵匚匸卜ト卩厂宀尸广彐℀-ℸ⅓-ↂ←-⏏①-⛃⼂⼅亠⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼫⼴⼹ヰ-ヲヴ-ヵヷ-ヿ、-〄〆-〿ㄅ-ㄬ]/u';
     const SIGN_PATTERN = '/[！-，：-＠［-｀｛-､!-,:-@{-~A-Za-zＡ-Ｚａ-ｚｌｉ・．／丶“‘’℀-ℸ⅓-ↂ←-⏏①-⛃⼂⼅亠⼉⼌⼍⼎⼏⼐⼔⼕⼖⼘⼙⼚⼧⼫⼴⼹ヰ-ヵヷ-ヿ、-〄〆-〿ㄅ-ㄬ]/u';
     //地番エラーパターン２ 「-0」「－０」を含む、ＡからＺを含む、工、ヨ、ユ、フと数字の組み合わせ、最後１字が数字・カタカナ・＊以外
     //const BUKKEN_ADDR_PATTERN2 = '/[Ａ-Ｚ]|[工|ヨ|ユ|フ][０-９]|[０-９][工|ヨ|ユ|フ]|[工|ヨ|ユ|フ]$|[^０-９ァ-ヶ＊]$/u';
@@ -551,6 +552,21 @@ class EstateReceipt
     			$str = str_replace($last_noise, '', $str);
     		}
     	}
+
+    	//最後、地番の漢字の部分に対し、「尸」という文字があるなら、「戸」に変換する
+    	if(preg_match('/([一-龠ぁ-んァ-ヶ]+)/u', $str, $match)){
+    		if(count($match) === 2){
+    			$part_of_kanji = $match[0];
+    			$address_tmp = explode($part_of_kanji, $str);
+    			if(count($address_tmp) === 2){
+    				$part_of_without_kanji = $address_tmp[1];
+    				if(mb_strpos($part_of_kanji, '尸') > 0){
+    					$part_of_kanji = str_replace('尸', '戸', $part_of_kanji);
+    					$str = $part_of_kanji . $part_of_without_kanji;
+    				}
+    			}
+    		}
+    	}
     	return $str;
     }
 
@@ -578,7 +594,9 @@ class EstateReceipt
     	 *      市川市北国分１丁目２５０１－１６外１
     	 *		市川市市川１丁目６５２－１外２
     	 */
+
     	$last_check_flag = false;
+
 		for($k=0; $k<count($split_words_array); $k++){
 
 	    	if(mb_strpos($str, $split_words_array[$k]) >= 0){
@@ -623,6 +641,8 @@ class EstateReceipt
 	    				//丁目　枝番
 	    				//枝番　外筆
 	    				//枝番
+	    				//**市大字下赤坂（元**分）１８０４－１１追加
+
 	    				if(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]+|[一二三四五六七八九十]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
 	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
 
@@ -663,6 +683,14 @@ class EstateReceipt
 
 	    							$last_check_flag = true;
 	    							break;
+	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)(（元)([一-龠ぁ-んァ-ヶ々ー]+)(分）)([０-９]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
+	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN_WITHOUT_KAKO, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_cit)){
+
+									$last_check_flag = true;
+	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)(（元)([一-龠ぁ-んァ-ヶ々ー]+)(分）)([０-９]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
+	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN_WITHOUT_KAKO, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_cit)){
+
+	    							$last_check_flag = true;
 	    				}
 	    			}
 	    		}
