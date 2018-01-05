@@ -560,7 +560,7 @@ class EstateReceipt
     			$address_tmp = explode($part_of_kanji, $str);
     			if(count($address_tmp) === 2){
     				$part_of_without_kanji = $address_tmp[1];
-    				if(mb_strpos($part_of_kanji, '尸') > 0){
+    				if(mb_strpos($part_of_kanji, '尸') >= 0){
     					$part_of_kanji = str_replace('尸', '戸', $part_of_kanji);
     					$str = $part_of_kanji . $part_of_without_kanji;
     				}
