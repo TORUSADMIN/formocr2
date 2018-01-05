@@ -342,6 +342,40 @@ class EstateReceipt
     			$str = str_replace($first_noise, '', $str);//地番先頭のノイズ(漢字かな以外の部分)
     		}
     	}
+
+    	//例：＊たま市中央区下落合３丁目２－５３
+    	if(preg_match('/^(＊)(.+)(市)(.+)(区)/u', $str, $match_city)){
+
+    		$first_star_address = $match_city[0];
+    		$first_star_search_address = str_replace('＊', '', $first_star_address);
+    		$first_star_pattern = '/' . $first_star_search_address. '$/u';
+    		$first_star_result = preg_grep($first_star_pattern, $city_master_array);
+
+    		if(count($first_star_result) === 1){
+    			$right_city_result_array = array_values($first_star_result);
+    			$right_city_result = $right_city_result_array[0];//city masterの中の結果
+
+    			$str = str_replace($first_star_address, $right_city_result, $str);
+
+    		}
+
+    	}elseif(preg_match('/^(＊)(.+)(郡)(.+)(町|村)/u', $str, $match_gun)){
+
+    		$first_star_address = $match_gun[0];
+    		$first_star_search_address = str_replace('＊', '', $first_star_address);
+    		$first_star_pattern = '/' . $first_star_search_address. '$/u';
+    		$first_star_result = preg_grep($first_star_pattern, $city_master_array);
+
+    		if(count($first_star_result) === 1){
+    			$right_city_result_array = array_values($first_star_result);
+    			$right_city_result = $right_city_result_array[0];//city masterの中の結果
+
+    			$str = str_replace($first_star_address, $right_city_result, $str);
+
+    		}
+    	}
+
+
     	//第一次修正してから、もう一度AddressModifierで地番分割
     	$wrong_address_tmp = $this->addrMod->changeAddress($str);
     	$wrong_address_city = $this->addrMod->getParts($wrong_address_tmp, AddressModifier::IDX_PARTS_CITY);//市区町村取得
@@ -434,7 +468,8 @@ class EstateReceipt
     	//「＊市」があったらcity_master参照　市不明区がある場合---できれば市の名を付ける
     	//例えば　＊市保土ヶ谷区権太坂１丁目２５８－１１－２０７
     	$city_with_star = $this->addrMod->getParts($changed_one_address_tmp, AddressModifier::IDX_PARTS_CITY);
-    	if(preg_match(self::WRONG_CITY_PATTERN2, $city_with_star, $match_star_city1)){
+
+		if(preg_match(self::WRONG_CITY_PATTERN2, $city_with_star, $match_star_city1)){
     		if(count($match_star_city1) === 4){
     			$ku_name = $match_star_city1[2];//区名取得
     			$star_pattern = '/^(.+市)(' . $ku_name . ')$/u';
@@ -445,7 +480,7 @@ class EstateReceipt
     				$pattern_star = '＊市' . $ku_name;
     				$right_city_last = $right_city_last_array[0];
     				$str = str_replace($pattern_star, $right_city_last, $str);
-    				return $str;
+    				//return $str;
     			}
     		}
     	}elseif(preg_match(self::WRONG_CITY_PATTERN3, $city_with_star, $match_star_city2)){//＊＊都筑区南０１田の場合
@@ -458,7 +493,7 @@ class EstateReceipt
     				$pattern_star = '＊' . $ku_name;
     				$right_city_last = $right_city_last_array[0];
     				$str = str_replace($pattern_star, $right_city_last, $str);
-    				return $str;
+    				//return $str;
     			}
     		}
     	}
@@ -544,6 +579,7 @@ class EstateReceipt
     			}
     		}
     	}
+
     	//前処理　地番最終チェック　丁目の間にノイズがある場合削除する
     	//例：横浜市りば区大字２３丁＆’目２３...
     	if(preg_match(self::WRONG_ADDRESS_PATTERN1, $str, $match_address)){
