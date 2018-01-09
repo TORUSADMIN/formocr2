@@ -24,7 +24,8 @@ class EstateReceipt
     //区分（土地|建物|区建）
     const GROUP_PATTERN = '/土地|建物|区建/u';
     //外筆
-    const SOTOFUDE_PATTERN = '/外[０-９]*$/u';
+    const SOTOFUDE_PATTERN = '/(外)([０-９]+)$/u';
+    const SOTOFUDE_PATTERN1 = '/(外)([０-９]+)$/u';
     //地番エラーパターン
     //20+1から20+C [!-,]　EEBC80+Aから[！-，]
     //30+Aから40+0[:-@] [：-＠]
@@ -274,9 +275,16 @@ class EstateReceipt
      * @return int
      */
     public function isVaildSotofude($str){
+
+    	$soto_fude_wrong_array = ['１１','２２','３３','４４','５５','６６','７７','８８','９９','００'];
         if (mb_strpos($str,"外") >= 0) {
             if (preg_match(self::SOTOFUDE_PATTERN, $str, $match)) {
-                return true;
+            	$soto_fude_index = count($match) - 1;
+            	if(!in_array($match[$soto_fude_index], $soto_fude_wrong_array)){
+                	return true;
+            	}else{
+            		return false;
+            	}
             } else {
                 return false;
             }
@@ -295,7 +303,7 @@ class EstateReceipt
      * @return mixed
      */
     public function getSotofude($str){
-        if(preg_match(self::SOTOFUDE_PATTERN, $str, $match)){
+        if(preg_match(self::SOTOFUDE_PATTERN1, $str, $match)){
 	        if ($match[0] == null) {
 	            return $str;
 	        } else {
@@ -679,17 +687,20 @@ class EstateReceipt
 	    				//枝番
 	    				//**市大字下赤坂（元**分）１８０４－１１追加
 
-	    				if(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]+|[一二三四五六七八九十]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
+
+	    				//--追加 例：横浜市保土ヶ谷区神戸町玉一１－３０５
+
+	    				if(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]{1,3}|[一二三四五六七八九十]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]{1,3})$/u', $second_half_city)
 	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
 
     								$last_check_flag = true;
     								break;
-	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]+|[一二三四五六七八九十]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
+	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]{1,3}|[一二三四五六七八九十]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
 	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
 
 	    							$last_check_flag = true;
 		    						break;
-	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
+	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]{1,3})$/u', $second_half_city)
 	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
 
 	    							$last_check_flag = true;
@@ -699,17 +710,17 @@ class EstateReceipt
 
 	    							$last_check_flag = true;
 	    							break;
-	    				}elseif(preg_match('/(^[０-９]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
+	    				}elseif(preg_match('/(^[０-９]{1,3})(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]{1,3})$/u', $second_half_city)
 	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
 
 	    							$last_check_flag = true;
 	    							break;
-	    				}elseif(preg_match('/(^[０-９]+)(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
+	    				}elseif(preg_match('/(^[０-９]{1,3})(丁目)([０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
 	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
 
 	    							$last_check_flag = true;
 	    							break;
-	    				}elseif(preg_match('/(^[０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
+	    				}elseif(preg_match('/(^[０-９－]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]{1,3})$/u', $second_half_city)
 	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
 
 	    							$last_check_flag = true;
@@ -719,7 +730,7 @@ class EstateReceipt
 
 	    							$last_check_flag = true;
 	    							break;
-	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)(（元)([一-龠ぁ-んァ-ヶ々ー]+)(分）)([０-９]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
+	    				}/*elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)(（元)([一-龠ぁ-んァ-ヶ々ー]+)(分）)([０-９]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
 	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN_WITHOUT_KAKO, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_cit)){
 
 									$last_check_flag = true;
@@ -727,7 +738,7 @@ class EstateReceipt
 	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN_WITHOUT_KAKO, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_cit)){
 
 	    							$last_check_flag = true;
-	    				}
+	    				}*/
 	    			}
 	    		}
 	    	}
