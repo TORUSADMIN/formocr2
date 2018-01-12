@@ -29,6 +29,7 @@ class FormOcrOutput
     private $outputCsv;
 
     const NUMERIC_PATTERN ='/[0-9]+/u';
+    const REGIST_PATTERN = '/^(第)([０-９]+)(号)$/';
 
     /**
      *
@@ -338,25 +339,63 @@ class FormOcrOutput
         //$this->logger->cLog($outputBuffer);
 		/*
 		 * ここで第一回チェック終わりました
+		 *-----後処理-----
 		 *
-		 * 受付日に対し
-		 * -----後処理-----
+		 *1　　　受付番号に対するのチェック
+
+		 *目的：受付番号の無駄なエラーマークを消す
+		 *
+		 *例：「第１２３５６号」　R　　－＞空にする
+		 *
+		 *error markをつけられたら、まず「第　数字　号」という型に合うかどうかをチェック（前後含む）
+		 *もし合うなら　A(n-1) = A(n) - 1と　A(n+1) = A(n) + 1を満たすどうかをチェック　OKならエラーマークを消す
+		 *NGなら　マーク保留
+		 *もしfirstの場合、secondと比べ（前提：secondもパターンOK）A(1) = A(2) - 1
+		 *　　　last　　,last - 1と比べ（前提：last - 1もパターンOK）A(last) = A(last - 1) + 1
+		 *もしA(n-1) + 2 = A(n+1)を満たすなら、A(n) = A(n+1) - 1
+		 *
+		 * 2　　　　受付日に対し
+		 *
 		 * ここから、受付番号の修正を始める
 		 * 前後を見て、前と後ろ同じの場合且空でない場合、真中の受付日付を修正する　マークを消す
 		 * 連番間違ったら、そのまま(一番と最後を無視)
 		 * 例：11月1日  11月111日  11月1日-->11月1日  11月1日  11月1日
 		 *
-		 * 目的修正ではなく、もし目的配列になければ、目的マークのところに該当確率が一番高いやつを埋め込む。
+		 * 3　　　　目的修正ではなく、もし目的配列になければ、目的マークのところに該当確率が一番高いやつを埋め込む。
 		 * ----------------
 		 * */
 		for($k=1; $k<count($outputBuffer)-1; $k++){
+
+			$error_mark = $outputBuffer[$k][1];//受付番号エラーマーク取得
+			if(!empty($error_mark)){
+				if(preg_match(self::REGIST_PATTERN, $outputBuffer[$k-1][0], $match_front)
+						&& preg_match(self::REGIST_PATTERN, $outputBuffer[$k][0], $match_this)
+						&& preg_match(self::REGIST_PATTERN, $outputBuffer[$k+1][0], $match_behind)){
+
+					$front_number = $match_front[2];
+					$front_number = mb_convert_kana($front_number, 'n');//全角数字->半角数字A(n-1)
+					$this_number = $match_this[2];
+					$this_number = mb_convert_kana($this_number, 'n');//全角数字->半角数字A(n)
+					$behind_number = $match_behind[2];
+					$behind_number = mb_convert_kana($behind_number, 'n');//全角数字->半角数字A(n+1)
+					//受付番号自身問題なし、マーク消す　と　受付番号修正+マーク消す
+					if($front_number + 1 == $this_number && $behind_number - 1 == $this_number){
+						$outputBuffer[$k][1] = '';//受付番号エラー消す
+					}elseif($front_number + 2 == $behind_number){
+						$right_this_number = $behind_number - 1;//例：第３６６１３号　第３６６１４０号　第３６６１５号
+						$right_this_number = mb_convert_kana($right_this_number, 'N');//半角数字->全角数字
+						$outputBuffer[$k][0] = '第' . $right_this_number . '号';
+						$outputBuffer[$k][1] = '';
+					}
+				}
+			}
+
 			//受付日修正
 			if($outputBuffer[$k-1][2] === $outputBuffer[$k+1][2] && !empty($outputBuffer[$k-1][2]) && !empty($outputBuffer[$k+1][2])){
 				$outputBuffer[$k][2] = $outputBuffer[$k+1][2];
 				$outputBuffer[$k][3] = '';//error消す
 			}
 			//目的修正
-
 			$purpose = $outputBuffer[$k][10];//目的抽出、修正する
 			//怪しい目的があったら、目的のところに修正する
 			//もともとのやつを保留し、目的エラーのところに埋め込む（間違って、修正することを防ぐため）
