@@ -30,6 +30,31 @@ class FormOcrOutput
 
     const NUMERIC_PATTERN ='/[0-9]+/u';
 
+    /**
+     *
+     * 目的配列
+     * @var array
+     */
+    const PURPOSE_ARRAY = [
+
+    		'仮登記（その他）', '仮登記（所有権）', '信託に関する登記', '共同担保変更通知', '共同担保追加通知', '処分の制限に関する登記',
+
+    		'分割・区分', '分筆', '区分建物の表題', '合体', '合併', '合筆', '土地改良区画整理',
+
+    		'地上権の設定', '地役権の設定', '地目変更・更正', '所有権移転売買',
+
+    		'地積変更・更正', '床面積の変更・更正', '所有権の保存（申請）', '所有権の保存（職権）', '所有権移転その他の原因',
+
+    		'所有権移転相続・法人合併', '所有権移転遺贈・贈与その他無償名義', '抵当権の設定', '抹消登記',
+
+    		'敷地権たる旨の登記', '敷地権の表示', '敷地権の表示の登記の変更・更正', '敷地権の表示の抹消',
+
+    		'根抵当権の設定', '権利に関するその他', '権利の変更・更正', '権利の移転（所有権を除く）', '滅失',
+
+    		'無償名義', '登記名義人の氏名等についての変更・更正', '表示に関するその他', '表題', '買戻権', '賃借権の設定',
+
+    		'質権の設定', '附属建物の新築', '移記', '分筆'];
+
     public function __construct($report1Csv, $outputDir)
     {
         // 必要なクラスのインスタンス
@@ -317,15 +342,30 @@ class FormOcrOutput
 		 * 受付日に対し
 		 * -----後処理-----
 		 * ここから、受付番号の修正を始める
-		 * 前後を見て、前と後ろ同じの場合、真中の受付日付を修正する　マークを保留
+		 * 前後を見て、前と後ろ同じの場合且空でない場合、真中の受付日付を修正する　マークを消す
 		 * 連番間違ったら、そのまま(一番と最後を無視)
 		 * 例：11月1日  11月111日  11月1日-->11月1日  11月1日  11月1日
+		 *
+		 * 目的修正ではなく、もし目的配列になければ、目的マークのところに該当確率が一番高いやつを埋め込む。
 		 * ----------------
 		 * */
 		for($k=1; $k<count($outputBuffer)-1; $k++){
-			if($outputBuffer[$k-1][2] === $outputBuffer[$k+1][2]){
+			//受付日修正
+			if($outputBuffer[$k-1][2] === $outputBuffer[$k+1][2] && !empty($outputBuffer[$k-1][2]) && !empty($outputBuffer[$k+1][2])){
 				$outputBuffer[$k][2] = $outputBuffer[$k+1][2];
-				$outputBuffer[$k][3] = '';
+				$outputBuffer[$k][3] = '';//error消す
+			}
+			//目的修正
+
+			$purpose = $outputBuffer[$k][10];//目的抽出、修正する
+			//怪しい目的があったら、目的のところに修正する
+			//もともとのやつを保留し、目的エラーのところに埋め込む（間違って、修正することを防ぐため）
+			if(!in_array($purpose, self::PURPOSE_ARRAY)){
+				$outputBuffer[$k][10] = $this->getRightPurpose($purpose);
+				$outputBuffer[$k][11] = '◆' . $purpose;
+			}
+			if($outputBuffer[$k][11] == 'R'){
+				$outputBuffer[$k][11] = '';//目的エラー消す
 			}
 		}
 		//$this->logger->cLog($outputBuffer);
@@ -337,6 +377,34 @@ class FormOcrOutput
         $this->logger->cLog("==== Processing completed. Output File => " . $this->outputCsv);
     }
 
+	/**
+	 * ーーーー後処理部分ーーーー
+	 * 目的の修正関数
+	 *
+	 * 目的配列を参照して、ある場合そのまま返す　
+	 * 例：所有権移転売買
+	 * 　　　　　　　　　　　　　　　　　　でないなら、類似度が閾値以上かつ配列のなかに一番大きいならば目的修正　
+	 * 例：ｉ抵当権の設定
+	 * 　　　　　　　　　　　　　　　　　　　　　　　　　　　　閾値以下ならば、そのまま返す　
+	 * 例：～、－、＝
+	 * @param unknown $purpose
+	 * @return unknown
+	 */
+    private function getRightPurpose($purpose){
+
+    	for($j=0; $j<count(self::PURPOSE_ARRAY); $j++){
+    		similar_text($purpose, self::PURPOSE_ARRAY[$j], $percent);
+    		$percent_array[] = array($percent);
+    	}
+    	$max_similar_array = array_keys($percent_array, max($percent_array));
+    	//類似度最大結果配列はただ一つなら//
+    	if(count($max_similar_array) === 1){
+    		$max_similar_index = $max_similar_array[0];
+    		$purpose = self::PURPOSE_ARRAY[$max_similar_index];
+    	}
+
+    	return $purpose;
+    }
     public function createHeader() {
 
         $buffer = array();
