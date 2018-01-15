@@ -387,6 +387,20 @@ class FormOcrOutput
 						$outputBuffer[$k][0] = '第' . $right_this_number . '号';
 						$outputBuffer[$k][1] = '';
 					}
+				}elseif(preg_match(self::REGIST_PATTERN, $outputBuffer[$k-1][0], $match_front) &&
+						preg_match(self::REGIST_PATTERN, $outputBuffer[$k+1][0], $match_behind)){
+
+					$front_number = $match_front[2];
+					$front_number = mb_convert_kana($front_number, 'n');
+					$behind_number = $match_behind[2];
+					$behind_number = mb_convert_kana($behind_number, 'n');
+
+					if($front_number + 2 == $behind_number){
+						$right_number = $behind_number - 1;
+						$right_number = mb_convert_kana($right_number, 'N');
+						$outputBuffer[$k][0] = '第' . $right_number . '号';
+						$outputBuffer[$k][1] = '';
+					}
 				}
 			}
 
