@@ -276,13 +276,17 @@ class EstateReceipt
      */
     public function isVaildSotofude($str){
 
-    	$soto_fude_wrong_array = ['１１','２２','３３','４４','５５','６６','７７','８８','９９','００'];
         if (mb_strpos($str,"外") >= 0) {
             if (preg_match(self::SOTOFUDE_PATTERN, $str, $match)) {
             	$soto_fude_index = count($match) - 1;
-            	if(!in_array($match[$soto_fude_index], $soto_fude_wrong_array)){
-                	return true;
-            	}else{
+
+            	$soto_fude = $match[$soto_fude_index];
+            	$soto_fude_number = mb_convert_kana($soto_fude, 'n');
+            	$soto_fude_number = intval($soto_fude_number);
+				//外筆二桁以上の場合エラーマークを付ける　要チェック--2018/01/30
+				if($soto_fude_number <= 10){
+					return true;
+				}else{
             		return false;
             	}
             } else {
