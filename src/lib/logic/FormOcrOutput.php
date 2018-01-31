@@ -365,6 +365,9 @@ class FormOcrOutput
 		 * 例：11月1日  11月111日  11月1日-->11月1日  11月1日  11月1日
 		 *
 		 * 3　　　　目的修正ではなく、もし目的配列になければ、目的マークのところに該当確率が一番高いやつを埋め込む。
+		 * 4　　　　
+		 * 外筆最終チェック：前地番うまく切ることできない場合、正方形マークない。
+		 * 　　　　　　　　　地番エラーが空の場合、もう一度外筆チェックを実行する。
 		 * ----------------
 		 * */
 		for($k=1; $k<count($outputBuffer)-1; $k++){
@@ -412,6 +415,14 @@ class FormOcrOutput
 				$outputBuffer[$k][2] = $outputBuffer[$k+1][2];
 				$outputBuffer[$k][3] = '';//error消す
 			}
+			//外筆最終チェック
+			$address = $outputBuffer[$k][8];
+			if(empty($outputBuffer[$k][9])){
+				if($wEstateReceipt->lastVaildSotofude($address) == false){
+					$outputBuffer[$k][9] = $outputBuffer[$k][9] . '■';
+				}
+			}
+
 			//目的修正
 			$purpose = $outputBuffer[$k][10];//目的抽出、修正する
 			//怪しい目的があったら、目的のところに修正する
