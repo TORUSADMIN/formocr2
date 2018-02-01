@@ -284,7 +284,7 @@ class EstateReceipt
             	$soto_fude_number = mb_convert_kana($soto_fude, 'n');
             	$soto_fude_number = intval($soto_fude_number);
 				//外筆二桁以上の場合エラーマークを付ける　要チェック--2018/01/30
-				if($soto_fude_number <= 10){
+				if($soto_fude_number < 10){
 					return true;
 				}else{
             		return false;
