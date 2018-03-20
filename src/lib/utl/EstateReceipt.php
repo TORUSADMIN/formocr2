@@ -670,6 +670,7 @@ class EstateReceipt
 	    		$last_tmp = explode($split_words_array[$k], $str);
 
 	    		if(count($last_tmp) >= 2){
+	    			//print_r($last_tmp);
 	    			$first_half_city = $last_tmp[0];
 	    			//市川市の場合  市川市北国分１丁目２５０１－１６外１
 	    			if(count($last_tmp) === 3 && $split_words_array[$k] === '市' && empty($first_half_city) && $last_tmp[1] === '川'){
@@ -804,21 +805,46 @@ class EstateReceipt
         }
     }
 
-    public function isValidEdabango($str){
+    /**
+     * 20180316修正　岩手県盛岡市乙部５地割３１６－１外２
+     * の地番が多いから、枝番が「５地割３１６－１」になる。
+     * 枝番チェック関数更新
+     * @param unknown $str
+     * @param unknown $pref
+     * @return boolean
+     */
+    public function isValidEdabango($str, $pref){
         //preg_match(self::EDA_PATTERN, $str, $match);
         //if (preg_match(self::EDA_PATTERN, $str)==true) {
-            preg_match(self::EDA_OK_PATTERN, $str, $match);
-            if (preg_match(self::EDA_OK_PATTERN, $str)==true) {
-                preg_match(self::CHOME_PATTERN, $str, $match);
-                if (preg_match(self::CHOME_PATTERN, $str) == false) {
-                    return true;
-
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+           // preg_match(self::EDA_OK_PATTERN, $str, $match);
+           if($pref == '岩手県'){
+	           if(preg_match('/^([０-９]+)([一-龠]+)([０-９－]+)$/u', $str) == true){
+		           if(preg_match(self::CHOME_PATTERN, $str) == false) {
+		               return true;
+		           }else{
+		               return false;
+		           }
+	           }elseif(preg_match(self::EDA_OK_PATTERN, $str)==true){
+	           	   if(preg_match(self::CHOME_PATTERN, $str) == false) {
+	           		   return true;
+	           	   }else{
+	           		   return false;
+	           	   }
+	           }else{
+	           		return false;
+	           }
+           }else{
+	            if(preg_match(self::EDA_OK_PATTERN, $str)==true) {
+	                //preg_match(self::CHOME_PATTERN, $str, $match);
+	                if (preg_match(self::CHOME_PATTERN, $str) == false) {
+	                    return true;
+	                } else {
+	                    return false;
+	                }
+	            } else {
+	                return false;
+	            }
+           }
         //} else {
         //    return false;
         //}

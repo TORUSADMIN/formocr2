@@ -284,15 +284,22 @@ class FormOcrOutput
                 //$oSotofude = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_MNAME);
 
                 if ( $wEstateReceipt->isValidCity($oCity) == false){
+                	//$this->logger->cLog($oBukkenAddr);
+                	//$this->logger->cLog('city');
                     $oBukkenAddrErr = '★'.$oBukkenAddrErr;
                 }
                 if ( $wEstateReceipt->isValidOaza($oChome1) == false){
+                	//$this->logger->cLog($oBukkenAddr);
+                	//$this->logger->cLog('oaza');
                     $oBukkenAddrErr = '★'.$oBukkenAddrErr;
                 }
                 if ( $wEstateReceipt->isValidAfterChome($oChome2) == false){
+                	//$this->logger->cLog($oBukkenAddr);
+                	//$this->logger->cLog('chome');
                     $oBukkenAddrErr = '★'.$oBukkenAddrErr;
                 }
-                if ( $wEstateReceipt->isValidEdabango($oLotnumber) == false){
+                if ( $wEstateReceipt->isValidEdabango($oLotnumber, $oPref) == false){
+                	//$this->logger->cLog($oLotnumber);
                     $oBukkenAddrErr = '●'.$oBukkenAddrErr;
                 }
                 //外筆
@@ -304,14 +311,18 @@ class FormOcrOutput
                     }
 
                 }
+                //一時的処理
+                //if($oPref !== '岩手県'){
                 if($oBukkenAddrErr == '' || $oBukkenAddrErr == 'A' || $oBukkenAddrErr == 'R' || $oBukkenAddrErr == 'R  A') {
                 	$split_words_array = ['区', '町', '村', '市'];
 
                 	if ( $wEstateReceipt->isValidBukkenAddr($oBukkenAddr, $city_master_array, $split_words_array) === false){
-                        $oBukkenAddrErr = '★'.$oBukkenAddrErr;
+                		//$this->logger->cLog('zentai');
+                		$oBukkenAddrErr = '★'.$oBukkenAddrErr;
 
                     }
                 }
+                //}
             }
 
             //目的
