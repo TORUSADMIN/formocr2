@@ -32,6 +32,7 @@ function ChangeFileToExcel(){
 		$book = new PHPExcel();
 		$sheet = $book->getActiveSheet();
 		$sheet->setTitle('Sheet1');
+		$sheet->getDefaultStyle()->getFont()->setName('ＭＳ Ｐゴシック')->setSize(11);//フォント書式とサイズ指定
 
 		$csv_file = new CsvModelBase($filename);
 		$csv_title = $csv_file->getCsvHeaderData();
