@@ -1,12 +1,13 @@
 <?php
 /**
- * 認識した後CSVファイルをチェックしてからの変換です。
+ * 認識したCSVファイルをチェックしてからの変換です。
  * create_checkcsv.phpを実施してから、
  * 本ファイルを実行して、
  * CSVファイルをそのままコピーし、excelに書き込む。
- * 指定フォルダの下に移動する。
+ * excelファイルを生成し、指定フォルダの下に移動する。
  *
  * author lixin
+ * ---2018/03/26---
  * */
 
 const CSV_DIR = "../CSV/";//チェックしたのディレクトリ
@@ -21,7 +22,9 @@ ChangeFileToExcel();
 function main(){
 
 }
-
+/**
+ * 処理関数
+ */
 function ChangeFileToExcel(){
 
 	foreach(glob(CSV_DIR . "*.csv") as $filename){
