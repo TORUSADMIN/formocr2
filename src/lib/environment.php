@@ -27,20 +27,3 @@ if (!defined('READ_ENVIRONMENT')) {
 
 	define('READ_ENVIRONMENT', true);
 }
-/*
- * evironment其实就是定义了各种代表路径的常量
- *
- *  1----pathinfo — 返回文件路径的信息
-	$path_parts = pathinfo('/www/htdocs/inc/lib.inc.php');
-	echo $path_parts['dirname'], "\n";    /www/htdocs/inc
-	echo $path_parts['basename'], "\n";   lib.inc.php
-	echo $path_parts['extension'], "\n";   php
-	echo $path_parts['filename'], "\n"; // since PHP 5.2.0   lib.inc
-
-	2----defined — 检查某个名称的常量是否定义
-	defined 只对常数有效
-	对变量要用isset查看
-
-	3----require_once 就是包含某文件
-
- * */
