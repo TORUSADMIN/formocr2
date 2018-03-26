@@ -659,6 +659,8 @@ class EstateReceipt
     	 *注意：西条市朔日市１２５－１７ 二つの「市」
     	 *      市川市北国分１丁目２５０１－１６外１
     	 *		市川市市川１丁目６５２－１外２
+    	 *      市原市ちはら台西１丁目２９−１０------20180326
+    	 *      市原市古市場２８３－１６------20180326
     	 */
 
     	$last_check_flag = false;
@@ -679,7 +681,11 @@ class EstateReceipt
 	    			}//市原市ちはら台西１丁目２９−１０ーーーー新追加
 	    			elseif(count($last_tmp) === 3 && $split_words_array[$k] === '市' && empty($first_half_city) && $last_tmp[1] === '原'){
 						$unknown_city = '市原市';
-	    			}elseif(count($last_tmp) === 3 && !empty($first_half_city)){//西条市朔日市１２５－１７ 二つの「市」
+	    			}//市原市古市場２８３－１６  市原市二日市場６９２－２外２  ------20180326新追加
+	    			elseif(count($last_tmp) === 4 && $split_words_array[$k] === '市' && empty($first_half_city) && $last_tmp[1] === '原'){
+						$unknown_city = '市原市';
+	    			}
+	    			elseif(count($last_tmp) === 3 && !empty($first_half_city)){//西条市朔日市１２５－１７ 二つの「市」
 	    				$unknown_city = $first_half_city . $split_words_array[$k];
 	    			}//市川市市川１丁目６５２－１外２
 	    			elseif(count($last_tmp) === 4 && $split_words_array[$k] === '市' && empty($first_half_city) && empty($last_tmp[2]) && $last_tmp[1] === '川'){
@@ -704,7 +710,11 @@ class EstateReceipt
 	    				}//市川市市川１丁目６５２－１外２
 	    				elseif(count($last_tmp) === 4 && $split_words_array[$k] === '市' && empty($first_half_city) && empty($last_tmp[2]) && $last_tmp[1] === '川'){
 	    					$second_half_city = '市' . $last_tmp[3];
-	    				}elseif(count($last_tmp) === 2){
+	    				}//市原市古市場２８３－１６  市原市二日市場６９２－２外２  ------20180326新追加
+	    				elseif(count($last_tmp) === 4 && $split_words_array[$k] === '市' && $unknown_city === '市原市'){
+							$second_half_city = $last_tmp[2] . '市' . $last_tmp[3];
+	    				}
+	    				elseif(count($last_tmp) === 2){
 	    					$second_half_city = $last_tmp[1];
 	    				}
 	    				//後半チェック
