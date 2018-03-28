@@ -379,6 +379,8 @@ class FormOcrOutput
 		 * 4　　　　
 		 * 外筆最終チェック：前地番うまく切ることできない場合、正方形マークない。
 		 * 　　　　　　　　　地番エラーが空の場合、もう一度外筆チェックを実行する。
+		 * ５、地番パタン最終チェック
+		 * 例：神奈川県茅ヶ崎市湘南３丁目－１２－－３４３－外２
 		 * ----------------
 		 * */
 		for($k=1; $k<count($outputBuffer)-1; $k++){
@@ -426,8 +428,15 @@ class FormOcrOutput
 				$outputBuffer[$k][2] = $outputBuffer[$k+1][2];
 				$outputBuffer[$k][3] = '';//error消す
 			}
-			//外筆最終チェック
+
 			$address = $outputBuffer[$k][8];
+			//地番チェック
+			if(!$wEstateReceipt->AddressLastCheck($address)){
+				$outputBuffer[$k][9] = '★';
+			}
+
+			//外筆最終チェック
+
 			if(empty($outputBuffer[$k][9])){
 				if($wEstateReceipt->lastVaildSotofude($address) == false){
 					$outputBuffer[$k][9] = $outputBuffer[$k][9] . '■';

@@ -786,6 +786,25 @@ class EstateReceipt
 		}
 		return $last_check_flag;
     }
+
+    /**
+     * 2018/03/28新追加
+     * 例：
+     * 神奈川県茅ヶ崎市湘南３丁目１２－３４３－外２
+     * 神奈川県茅ヶ崎市湘南３丁目１２－－３４３－外２
+     * 神奈川県茅ヶ崎市湘南３丁目－１２－３４３外２
+     * 神奈川県茅ヶ崎市湘南３丁目－１２－－３４３－外２
+     * @param unknown $address
+     * @return boolean
+     */
+    public function AddressLastCheck($address){
+    	if(preg_match('/(\－\－|丁目－|－外２)/u', $address)){
+    		return false;
+    	}else{
+    		return true;
+    	}
+    }
+
     /**
      *
      * 大字名チェック-------「丁目」前　「市区町村」後
