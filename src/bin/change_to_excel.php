@@ -27,6 +27,8 @@ function main(){
  */
 function ChangeFileToExcel(){
 
+	ini_set('memory_limit', '1G');
+
 	foreach(glob(CSV_DIR . "*.csv") as $filename){
 
 		$book = new PHPExcel();
