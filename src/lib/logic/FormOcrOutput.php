@@ -316,7 +316,7 @@ class FormOcrOutput
                 if($oBukkenAddrErr == '' || $oBukkenAddrErr == 'A' || $oBukkenAddrErr == 'R' || $oBukkenAddrErr == 'R  A') {
                 	$split_words_array = ['区', '町', '村', '市'];
 
-                	if ( $wEstateReceipt->isValidBukkenAddr($oBukkenAddr, $city_master_array, $split_words_array) === false){
+                	if ( $wEstateReceipt->isValidBukkenAddr($oBukkenAddr, $city_master_array, $split_words_array, $oPref) === false){
                 		//$this->logger->cLog('zentai');
                 		$oBukkenAddrErr = '★'.$oBukkenAddrErr;
 

@@ -641,7 +641,7 @@ class EstateReceipt
      * @param $str
      * @return int
      */
-    public function isValidBukkenAddr($str, $city_master_array, $split_words_array) {
+    public function isValidBukkenAddr($str, $city_master_array, $split_words_array, $pref) {
         //preg_match(self::BUKKEN_ADDR_PATTERN, $str, $match);
         //最後地番チェック　
         /*
@@ -771,15 +771,48 @@ class EstateReceipt
 
 	    							$last_check_flag = true;
 	    							break;
-	    				}/*elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)(（元)([一-龠ぁ-んァ-ヶ々ー]+)(分）)([０-９]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)$/u', $second_half_city)
-	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN_WITHOUT_KAKO, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_cit)){
+	    				}
+						/*
+						 * 岩手県向けの特別地番チェック
+						 * 「地割」がある場合の正規パタン追加
+						 * 例：
+						 * 紫波郡矢巾町大字上矢次第４地割３１－７
+						 * 盛岡市乙部４地割８３－５６外３
+						 * 盛岡市西見前１７地割４８－１
+						 * */
+	    				if($pref == '岩手県' && $last_check_flag == false){
+							if(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]{1,2})(地割)([０-９]+)(－)([０-９]+)$/u', $second_half_city)
+									&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
 
-									$last_check_flag = true;
-	    				}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)(（元)([一-龠ぁ-んァ-ヶ々ー]+)(分）)([０-９]+|[甲乙丙丁戊己庚辛壬癸][０-９－]+)(外)([０-９]+)$/u', $second_half_city)
-	    						&& !preg_match(self::BUKKEN_ADDR_PATTERN_WITHOUT_KAKO, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_cit)){
+										$last_check_flag = true;
+										break;
+							}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]{1,2})(地割)([０-９]+)(－)([０-９]+)(外)([０-９]{1,3})$/u', $second_half_city)
+									&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
 
-	    							$last_check_flag = true;
-	    				}*/
+										$last_check_flag = true;
+										break;
+							}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]{1,2})(地割)([０-９]+)$/u', $second_half_city)
+									&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+										$last_check_flag = true;
+										break;
+							}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]{1,2})(地割)([０-９]+)(外)([０-９]{1,3})$/u', $second_half_city)
+									&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+										$last_check_flag = true;
+										break;
+							}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]{1,2})(地割)([０-９]+)(－)([０-９]+)(－)([０-９]+)(外)([０-９]{1,3})$/u', $second_half_city)
+									&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+										$last_check_flag = true;
+										break;
+							}elseif(preg_match('/(^[一-龠ぁ-んァ-ヶ々ー]+)([０-９]{1,2})(地割)([０-９]+)(－)([０-９]+)(－)([０-９]+)$/u', $second_half_city)
+									&& !preg_match(self::BUKKEN_ADDR_PATTERN, $second_half_city) && !preg_match(self::BUKKEN_ADDR_PATTERN2, $second_half_city)){
+
+										$last_check_flag = true;
+										break;
+							}
+	    				}
 	    			}
 	    		}
 	    	}
