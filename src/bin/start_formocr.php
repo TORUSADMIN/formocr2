@@ -91,8 +91,8 @@ function main(){
 	}
 	if(!empty($input_file_box) && is_array($input_file_box)){
 		foreach($input_file_box as $input_filename){
-			copy($filename, PDF_COPY_DIR.basename($filename));
-			unlink($filename);
+			copy($input_filename, PDF_COPY_DIR.basename($input_filename));
+			unlink($input_filename);
 			//OCR認識行う
 			NewExecFormOcr();
 			chdir($now_path);
