@@ -50,15 +50,8 @@ class FormOcrReport1 extends CsvModelBase {
      * @param unknown $report1CsvPath CSV
      * @param string $delimiter 基本的には「,」
      */
-    public function __construct($reportCsvPath
-        , $delimiter = CsvModelBase::CSV_DELIMITER
-        , $columnCnt = self::DEFAULT_COL_CNT) {
-
-        parent::__construct($reportCsvPath, $delimiter, $columnCnt);
-
+    public function __construct() {
         $this->addrMod = new AddressModifier();
-        $this->initFormOcrReport1();
-
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -68,12 +61,17 @@ class FormOcrReport1 extends CsvModelBase {
     /**
      * ファイルの存在確認とデータの読み込み
      */
-    private function initFormOcrReport1() {
+    public function initFormOcrReport1($reportCsvPath
+        , $delimiter = CsvModelBase::CSV_DELIMITER
+        , $columnCnt = self::DEFAULT_COL_CNT) {
 
-        // $this->debugProfile();
-        //$this->csvDataOrg = $this->getCsvBodyDataEx();
+        parent::__construct($reportCsvPath, $delimiter, $columnCnt);
+
         $this->csvDataOrg = $this->getCsvBodyData(false);
-        //$this->logger->cLog($this->csvDataOrg);
+    }
+
+    public function initCsvData($csvData){
+        $this->csvDataOrg = $csvData;
     }
 
     /**
@@ -276,7 +274,7 @@ class FormOcrReport1 extends CsvModelBase {
         $FilenameTmp = str_replace("＿","_",$FilenameTmp);
         $oArraytmp = explode("_", $FilenameTmp);
 
-        if (count($oArraytmp) == 3) {
+        if (count($oArraytmp) >= 3) {
             return $oArraytmp[0];
         } else {
             throw new Exception('Prefecture not found. FileName = ' . $FilenameTmp);
@@ -287,7 +285,7 @@ class FormOcrReport1 extends CsvModelBase {
         $FilenameTmp = $this->getColumnsValue($line, array(self::IDX_FILE_NAME));
         $FilenameTmp = str_replace("＿","_",$FilenameTmp);
         $oArraytmp = explode("_", $FilenameTmp);
-        if (count($oArraytmp) == 3) {
+        if (count($oArraytmp) >= 3) {
             return substr($oArraytmp[2],0,4);
         } else {
             throw new Exception('YEAR not found. FileName = ' . $FilenameTmp);
