@@ -219,7 +219,7 @@ class FormOcrOutput
 			//$this->logger->cLog($fileName);//埼玉県_越谷_201711
 			$fileNameTmp = explode('_', $fileName);
 			//$this->logger->cLog($fileNameTmp);//201711 201708...
-			if(count($fileNameTmp) === 3){
+			if(count($fileNameTmp) >= 3){
 				$yearAndMonth = $fileNameTmp[2];
 				$oReceiptMonth = substr($yearAndMonth, -2);//11 08 01...
 				if(mb_strpos($oReceiptMonth, '0') === 0){
