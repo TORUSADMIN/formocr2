@@ -764,6 +764,7 @@ class FormOcrOutput
         $countLine = $countLine + 1;
     }
 
+    //外注作業後のEXCELファイルからloaddataを作成する
     public function processing3()
     {
 
@@ -783,8 +784,9 @@ class FormOcrOutput
             return false;
         }
         $ini_array = parse_ini_file( "../lib/init/areamaster.ini",false);
-        $arrKoOtsuHei = array("甲","乙","丙","丁","戊","己","庚","辛","壬","癸","イ","ロ","ハ","ニ","ホ","ヘ","ト","い","ろ","は","に","Ａ","Ｂ","Ｃ","Ｄ","セ");
-        //$arrKoOtsuHei = array("甲","乙","丙","丁","戊","己","庚","辛","壬","癸","イ","ロ","ハ","ニ","ホ","ヘ","ト","Ａ","Ｂ","Ｃ","Ｄ");
+        //エリアによって、訂正したほうがよい
+        //$arrKoOtsuHei = array("甲","乙","丙","丁","戊","己","庚","辛","壬","癸","イ","ロ","ハ","ニ","ホ","ヘ","ト","い","ろ","は","に","Ａ","Ｂ","Ｃ","Ｄ","セ");
+        $arrKoOtsuHei = array("甲","乙","丙","丁","戊","己","庚","辛","壬","癸","イ","ロ","ハ","ニ","ホ","ヘ","ト","Ａ","Ｂ","Ｃ","Ｄ");
         //$csv = $this->report1->getCsvBodyDataEx();
 
         // 出力用

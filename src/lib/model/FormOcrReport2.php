@@ -286,7 +286,7 @@ class FormOcrReport2 extends CsvModelBase {
         $FilenameTmp = str_replace("＿","_",$FilenameTmp);
         $oArraytmp = explode("_", $FilenameTmp);
 
-        if (count($oArraytmp) == 3) {
+        if (count($oArraytmp) >= 3) {
             return $oArraytmp[0];
         } else {
             throw new Exception('Prefecture not found. FileName = ' . $FilenameTmp);
@@ -297,7 +297,7 @@ class FormOcrReport2 extends CsvModelBase {
         $FilenameTmp = $this->getColumnsValue($line, array(self::IDX_FILE_NAME));
         $FilenameTmp = str_replace("＿","_",$FilenameTmp);
         $oArraytmp = explode("_", $FilenameTmp);
-        if (count($oArraytmp) == 3) {
+        if (count($oArraytmp) >= 3) {
             return substr($oArraytmp[2],0,4);
         } else {
             throw new Exception('YEAR not found. FileName = ' . $FilenameTmp);
