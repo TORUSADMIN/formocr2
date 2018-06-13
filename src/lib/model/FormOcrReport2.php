@@ -9,6 +9,9 @@ require_once(LIB_DIR.'/model/CsvModelBase.php');
 require_once(LIB_DIR.'/utl/AddressModifier.php');
 require_once(LIB_DIR.'/utl/PersonalNameModifier.php');
 
+/*
+ * 外注チェック後のEXCELファイル
+ */
 class FormOcrReport2 extends CsvModelBase {
     // AddressModifierクラス
     private $addrMod;

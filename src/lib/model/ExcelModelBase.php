@@ -8,7 +8,7 @@
  */
 
 /**
- * モデルの基底クラス
+ * EXCELモデルの基底クラス
  */
 
 require_once(LIB_DIR.'/utl/Logger.php');

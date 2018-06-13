@@ -273,7 +273,7 @@ class FormOcrReport1 extends CsvModelBase {
         $FilenameTmp = $this->getColumnsValue($line, array(self::IDX_FILE_NAME));
         $FilenameTmp = str_replace("＿","_",$FilenameTmp);
         $oArraytmp = explode("_", $FilenameTmp);
-
+        //ファイル名：都道府県_管轄名_YYYYMM_comment
         if (count($oArraytmp) >= 3) {
             return $oArraytmp[0];
         } else {
@@ -285,6 +285,7 @@ class FormOcrReport1 extends CsvModelBase {
         $FilenameTmp = $this->getColumnsValue($line, array(self::IDX_FILE_NAME));
         $FilenameTmp = str_replace("＿","_",$FilenameTmp);
         $oArraytmp = explode("_", $FilenameTmp);
+        //ファイル名：都道府県_管轄名_YYYYMM_comment
         if (count($oArraytmp) >= 3) {
             return substr($oArraytmp[2],0,4);
         } else {

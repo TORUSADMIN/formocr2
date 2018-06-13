@@ -31,13 +31,13 @@ function printUsage($errMessage = null) {
     global $version;
 
     printf('//'. "\n");
-    printf('// ACADATA作成:' . $version . "\n");
+    printf('// EXCELファイルから_ACADATA作成:' . $version . "\n");
     printf('// VERSION: ' . $version . "\n");
     printf('// 仕様： '.'無し' . "\n");
     printf('//'. "\n");
     printf('// r: ソース(CSV)'. "\n");
     printf('// o: 出力用ディレクトリ'. "\n\n");
-    printf("// Usage: create_acadata.php -r report1.csv -o dirname\n");
+    printf("// Usage: create_excel_to_acadata.php -r report1.csv -o dirname\n");
 
     if (!empty($errMessage)) {
         printf("// \n");
