@@ -633,6 +633,13 @@ class EstateReceipt
     			}
     		}
     	}
+    	/*
+    	 * 2018/06/14新追加　兵庫県の宝塚市----->宝塚市に変更「点」の問題
+    	 *
+    	 * */
+    	if($oPref == '兵庫県' && preg_match('/^(宝塚市)(.+)$/u', $str, $match)){
+    		$str = '宝塚市' . $match[2];
+    	}
     	return $str;
     }
 
