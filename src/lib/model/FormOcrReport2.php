@@ -9,7 +9,10 @@ require_once(LIB_DIR.'/model/CsvModelBase.php');
 require_once(LIB_DIR.'/utl/AddressModifier.php');
 require_once(LIB_DIR.'/utl/PersonalNameModifier.php');
 
-class FormOcrReport1 extends CsvModelBase {
+/*
+ * 外注チェック後のEXCELファイル
+ */
+class FormOcrReport2 extends CsvModelBase {
     // AddressModifierクラス
     private $addrMod;
     // ファイルデータそのもの
@@ -21,7 +24,7 @@ class FormOcrReport1 extends CsvModelBase {
     // 定数
     const DATA_DELIM = '_#_';
 
-    const DEFAULT_COL_CNT = 0; // 受付番号,受付番号Err,受付日,受付日Err,順序,順序Err,区分,区分Err,地番,地番Err,目的,目的Err,ファイル名,ページ,ページエラー
+    const DEFAULT_COL_CNT = 0; // OK/NG,受付番号順,初期順,受付番号,受付番号Err,受付日,受付日Err,順序,順序Err,区分,区分Err,地番,地番Err,目的,目的Err,ファイル名,ページ,ページエラー
 
     const CHG_ADDR_CHOME_KAN2ZEN = 'CHK_ADDR_CHOME_KAN2ZEN';
     const CHG_ADDR_CHOME_ZEN2HAN = 'CHK_ADDR_CHOME_ZEN2HAN';
@@ -29,21 +32,30 @@ class FormOcrReport1 extends CsvModelBase {
     const CHG_ADDR_KANA_ZEN2HAN = 'CHG_ADDR_KANA_ZEN2HAN';
 
     /** 所有者事項＿レポート型式１.CSV INDEX */
-    const IDX_RECEIPT_NO = 0; 		// 受付番号
-    const IDX_RECEIPT_NO_ERR = 1;	// 受付番号エラー（A、Rが付くもの）
-    const IDX_RECEIPT_DATE = 2;		// 受付日
-    const IDX_RECEIPT_DATE_ERR = 3;	// 受付日エラー（A、Rが付くもの）
-    const IDX_RECEIPT_SEQ = 4;	    // 順序（単独）、（連続）、（連先）
-    const IDX_RECEIPT_SEQ_ERR = 5;  // 順序（単独）、（連続）、（連先）エラー（A、Rが付くもの）
-    const IDX_GROUP = 6;             // 区分　{新）土地・建物　既）土地・建物}
-    const IDX_GROUP_ERR = 7;        // 区分エラー　{新）土地・建物　既）土地・建物}（A、Rが付くもの）
-    const IDX_BUKKEN_ADDR = 8;      // 地番
-    const IDX_BUKKEN_ADDR_ERR=9;   // 地番エラー（A、Rが付くもの）
-    const IDX_PURPOSE = 10;		    // 目的
-    const IDX_PURPOSE_ERR = 11;		// 目的エラー（A、Rが付くもの）
-    const IDX_FILE_NAME = 12;		// ファイル名＿拡張子なし
-    const IDX_PAGE = 13;		        // ページ数
-    const IDX_PAGE_ERR = 14;		    // ページエラー（A、Rが付くもの）
+    const IDX_OKNG = 0; 		        // OK/NG
+    const IDX_RECEIPT_NO_JUN = 1; 	// 受付番号順
+    const IDX_INIT_JUN = 2; 		    // 初期順
+    const IDX_RECEIPT_NO = 3; 		// 受付番号
+    const IDX_RECEIPT_NO_ERR = 4;	// 受付番号エラー（A、Rが付くもの）
+    const IDX_RECEIPT_DATE = 5;		// 受付日
+    const IDX_RECEIPT_DATE_ERR = 6;	// 受付日エラー（A、Rが付くもの）
+    const IDX_RECEIPT_SEQ = 7;	    // 順序（単独）、（連続）、（連先）
+    const IDX_RECEIPT_SEQ_ERR = 8;  // 順序（単独）、（連続）、（連先）エラー（A、Rが付くもの）
+    const IDX_GROUP = 9;             // 区分　{新）土地・建物　既）土地・建物}
+    const IDX_GROUP_ERR = 10;        // 区分エラー　{新）土地・建物　既）土地・建物}（A、Rが付くもの）
+    const IDX_BUKKEN_ADDR = 11;      // 地番
+    const IDX_BUKKEN_ADDR_ERR = 12;   // 地番エラー（A、Rが付くもの）
+    const IDX_PURPOSE = 13;		    // 目的
+    const IDX_PURPOSE_ERR = 14;		// 目的エラー（A、Rが付くもの）
+    const IDX_FILE_NAME = 15;		// ファイル名＿拡張子なし
+    const IDX_PAGE = 16;		        // ページ数
+    const IDX_PAGE_ERR = 17;		    // ページエラー（A、Rが付くもの）
+    const IDX_a = 18;		    // あ
+    const IDX_i = 19;		    // い
+    const IDX_u = 20;		    // う
+    const IDX_e = 21;		    // え
+    const IDX_o = 22;		    // お
+
 
     /**
      * コンストラクタ
@@ -273,7 +285,7 @@ class FormOcrReport1 extends CsvModelBase {
         $FilenameTmp = $this->getColumnsValue($line, array(self::IDX_FILE_NAME));
         $FilenameTmp = str_replace("＿","_",$FilenameTmp);
         $oArraytmp = explode("_", $FilenameTmp);
-        //ファイル名：都道府県_管轄名_YYYYMM_comment
+
         if (count($oArraytmp) >= 3) {
             return $oArraytmp[0];
         } else {
@@ -285,7 +297,6 @@ class FormOcrReport1 extends CsvModelBase {
         $FilenameTmp = $this->getColumnsValue($line, array(self::IDX_FILE_NAME));
         $FilenameTmp = str_replace("＿","_",$FilenameTmp);
         $oArraytmp = explode("_", $FilenameTmp);
-        //ファイル名：都道府県_管轄名_YYYYMM_comment
         if (count($oArraytmp) >= 3) {
             return substr($oArraytmp[2],0,4);
         } else {

@@ -5,9 +5,9 @@ require_once(UTIL_DIR . '/Logger.php');
 require_once(UTIL_DIR . '/AddressModifier.php');
 require_once(UTIL_DIR . '/AddressConfig.php');
 require_once(__DIR__ . '/../model/FormOcrReport1.php');
+require_once(__DIR__ . '/../model/FormOcrReport2.php');
+require_once(__DIR__ . '/../model/FormOcrReportExcel.php');
 require_once(__DIR__ . '/../utl/EstateReceipt.php');
-
-
 
 /**
  * Created by FormOCR.
@@ -22,8 +22,9 @@ class FormOcrOutput
     private $logger;
     private $addrMod;
     private $report1;
+    private $report2;
 
-    private $report1CsvPath;
+    private $filePath;
     private $outputDirPath;
 
     private $outputCsv;
@@ -62,11 +63,26 @@ class FormOcrOutput
         $this->logger = new Logger();
         $this->addrMod = new AddressModifier();
 
-        $this->report1CsvPath = $report1Csv;
+        $ext = substr($report1Csv, strrpos($report1Csv, '.') + 1);
+        $this->filePath = $report1Csv;
         $this->outputDirPath = $outputDir;
 
-        // CSVファイル読み込み
-        $this->init();
+        if ($ext == "csv") {
+            // CSVファイル読み込み
+            $this->init();
+        } else {
+            //EXCELファイル読み込み
+            $this->initExcel();
+        }
+    }
+
+    /**
+     * EXCELクラスのデータ取得
+     */
+    public function initExcel()
+    {
+        $sheetIndex = 0;
+        $this->reportExcel = new FormOcrReportExcel($this->filePath, $sheetIndex);
     }
 
     /**
@@ -74,7 +90,8 @@ class FormOcrOutput
      */
     public function init()
     {
-        $this->report1 = new FormOcrReport1($this->report1CsvPath, CsvModelBase::CSV_DELIMITER);
+        $this->report1 = new FormOcrReport1();
+        $this->report1->initFormOcrReport1($this->filePath, CsvModelBase::CSV_DELIMITER);
         $this->setupOutputFileName();
     }
 
@@ -82,7 +99,7 @@ class FormOcrOutput
      * OUTPUTファイル
      */
     public function setupOutputFileName() {
-        $paths = pathinfo($this->report1CsvPath);
+        $paths = pathinfo($this->filePath);
         $filePath = $paths['filename'] . "_output_" . date('YmdHis') . ".csv";
         $this->outputCsv = $filePath;
     }
@@ -92,7 +109,7 @@ class FormOcrOutput
      */
     public function processing() {
 
-        $this->logger->cLog("=== Statring output From " . $this->report1CsvPath );
+        $this->logger->cLog("=== Statring output From " . $this->filePath );
         $this->logger->cLog('==================================================');
 
         // レポートCSV取得
@@ -202,7 +219,7 @@ class FormOcrOutput
 			//$this->logger->cLog($fileName);//埼玉県_越谷_201711
 			$fileNameTmp = explode('_', $fileName);
 			//$this->logger->cLog($fileNameTmp);//201711 201708...
-			if(count($fileNameTmp) === 3){
+			if(count($fileNameTmp) >= 3){
 				$yearAndMonth = $fileNameTmp[2];
 				$oReceiptMonth = substr($yearAndMonth, -2);//11 08 01...
 				if(mb_strpos($oReceiptMonth, '0') === 0){
@@ -568,12 +585,13 @@ class FormOcrOutput
     public function processing2() {
         $ini_array = parse_ini_file( "../lib/init/areamaster.ini",false);
 
-        $this->logger->cLog("=== Statring output From " . $this->report1CsvPath );
+        $this->logger->cLog("=== Statring output From " . $this->filePath );
 
         // レポートCSV取得
         $hasHeader = true;
         $csv = $this->report1->getCsvBodyData($hasHeader);
-        $arrKoOtsuHei = array("甲","乙","丙","丁","戊","己","庚","辛","壬","癸");
+        $arrKoOtsuHei = array("甲","乙","丙","丁","戊","己","庚","辛","壬","癸","イ","ロ","ハ","ニ","ホ","ヘ","ト","い","ろ","は","に","Ａ","Ｂ","Ｃ","Ｄ","セ");
+        //$arrKoOtsuHei = array("甲","乙","丙","丁","戊","己","庚","辛","壬","癸","イ","ロ","ハ","ニ","ホ","ヘ","ト","Ａ","Ｂ","Ｃ","Ｄ");
         //$csv = $this->report1->getCsvBodyDataEx();
 
         // 出力用
@@ -746,6 +764,212 @@ class FormOcrOutput
         $countLine = $countLine + 1;
     }
 
+    //外注作業後のEXCELファイルからloaddataを作成する
+    public function processing3()
+    {
+
+        $this->logger->cLog("=== Statring output From " . $this->filePath);
+
+        // レポートCSV取得
+        $hasHeader = true;
+        $csv = $this->reportExcel->getExcelBodyData($hasHeader);
+        $this->report2 = new FormOcrReport2();
+        $this->report2->initCsvData($csv);
+
+        $this->processing_bussinesLogic($csv);
+    }
+
+    private function processing_bussinesLogic($csv = null){
+        if (!isset($csv)){
+            return false;
+        }
+        $ini_array = parse_ini_file( "../lib/init/areamaster.ini",false);
+        //エリアによって、訂正したほうがよい
+        //$arrKoOtsuHei = array("甲","乙","丙","丁","戊","己","庚","辛","壬","癸","イ","ロ","ハ","ニ","ホ","ヘ","ト","い","ろ","は","に","Ａ","Ｂ","Ｃ","Ｄ","セ");
+        $arrKoOtsuHei = array("甲","乙","丙","丁","戊","己","庚","辛","壬","癸","イ","ロ","ハ","ニ","ホ","ヘ","ト","Ａ","Ｂ","Ｃ","Ｄ");
+        //$csv = $this->report1->getCsvBodyDataEx();
+
+        // 出力用
+        $outputBuffer = array();
+        $oReceiptNo="";
+        $countLine = 0;
+        $hasHeader = false;
+
+        foreach ($csv as $line) {
+            if (count($line) == 1){
+                continue;
+            }
+            if ($hasHeader == true) {
+                if ($countLine == 0) {
+                    $countLine = $countLine + 1;
+                    continue;
+                }
+            }
+            //初期化
+            $wEstateReceipt = new EstateReceipt();
+            $preReceiptNo = $oReceiptNo; //1つ前の受付番号
+            $oReceiptNo = "";
+            $oReceiptNoErr = "";
+            $oReceiptDate = "";
+            $oReceiptSeq = "";
+            //$oReceiptSeqErr = "";
+            $oGroup = "";
+            //$oGroupErr = "";
+            $oBukkenAddr = "";
+            //$oBukkenAddrErr ="";
+            $oPurpose = "";
+            $oPurposeErr = "";
+            $wBukkenAddr = "";
+            $wSotofude = "";
+            $oSotofude ="";
+            $oSotofudeTmp ="";
+            $oPref = "";
+            $oYear = "";
+            $oFilename = "";
+            $oPage = "";
+
+            //受付番号
+            $oReceiptNo = $this->report2->getReceiptNo($line);
+            //受付番号エラー
+            //$oReceiptNoErr = $this->report2->getReceiptNo_Err($line);
+
+            //受付日
+            $oReceiptDate = $this->report2->getReceiptDate($line);
+            //受付日エラー
+            //$oReceiptDateErr = $this->report2->getReceiptDate_Err($line);
+            //順序（単独）、（連続）、（連先）
+            $oReceiptSeq = $this->report2->getReceiptSeq($line);
+            //順序（単独）、（連続）、（連先）エラー
+            //$oReceiptSeqErr = $this->report2->getReceiptSeq_Err($line);
+
+            //グループ（土地、建物）
+            $oGroup = $this->report2->getGroup($line);
+            //グループ（土地、建物）エラー
+            //$oGroupErr = $this->report2->getGroup_Err($line);
+
+            //地番
+            $oBukkenAddr = $this->report2->getBukkenAddr($line);
+            //地番エラー
+            //$oBukkenAddrErr = $this->report2->getBukkenAddr_Err($line);
+
+            //ファイル名　都道府県_市区郡_
+            $oFilename = $this->report2->getFilename($line);
+
+            //ページ
+            $oPage = $this->report2->getPage($line);
+
+
+            //都道府県を取得
+            $oPref = trim($this->report2->getPrefecture($line));
+
+            //年を取得
+            $oYear = trim($this->report2->getYear($line));
+
+            $oAddress = $oPref.$oBukkenAddr;
+
+            // 住所変換（数字は全角、丁目はハイフン、ハイフンも全角）
+            $addrConfigForChiban = $this->createAddressConfigForChiban();
+            $oAddrTmp1 = $this->addrMod->changeAddress($oAddress, $addrConfigForChiban);
+            $cityAndTown = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_CITY);
+            $oAddrTmp = $this->addrMod->splitSikugun($oPref,$cityAndTown);
+            $oCity = str_replace('★','',$oAddrTmp[0]);
+            $oChome1 = str_replace('★','',$oAddrTmp[1]);
+            $oChome2 = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_CHOME);
+
+            //埼玉県春日部市八丁目などの例外処理、Chome2をChome1へ入れ替え
+            if ($wEstateReceipt->isChome2toChome1($oAddress) == true ){
+                if ($oChome1 == "") {
+                    $oChome1 = $oChome2;
+                    $oChome2 = "";
+                }
+            }
+
+            //枝番以降を抽出
+            $oAfter = mb_substr($oBukkenAddr,mb_strlen($cityAndTown.$oChome2), mb_strlen($oBukkenAddr)-mb_strlen($cityAndTown.$oChome2));
+            //外筆を除いて枝番を作る
+            if(preg_match('/外/',$oAfter)) {
+                //外筆
+                $oSotofude = $wEstateReceipt->getSotofude($oAfter);
+                if (mb_strpos($oAfter,"外")>0){
+                    $oLotnumber = mb_substr($oAfter,0,mb_strpos($oAfter,"外"));
+                }
+            } else {
+                if(mb_strlen($oAfter)>0){
+                    $oLotnumber = $oAfter;
+                }
+            }
+
+            $oKootu = "";
+            //oChome1の最後に甲・乙・丙・丁・戊・己・庚・辛・壬・癸が含まれる場合、地番・家屋番号の先頭へ追加する
+            if(in_array(mb_substr($oChome1,-1), $arrKoOtsuHei) == true) {
+                $oLotnumber = mb_substr($oChome1,-1) . $oLotnumber;
+                //最後の１文字削除
+                $oChome1 = mb_substr($oChome1,0,-1);
+            }
+
+            //$oLotnumber = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_AFTER);
+            //$oAfter = $this->addrMod->getParts($oAddrTmp1,AddressModifier::IDX_PARTS_MNAME);
+
+            //目的
+            $oPurpose = $this->report2->getPurpose($line);
+            //目的エラー
+            //$oPurposeErr = $this->report2->getPurpose_Err($line);
+
+
+            //Areaidを取得
+            $PrefCity = $oPref.$oCity;
+            $oAreaid = $ini_array[$PrefCity];
+            if (is_null($oAreaid) == true) {
+                $oAreaid = "★";
+            }
+
+            //離島かどうかチェック、離島の場合、住所変換がうまくいっていないので★を付ける
+            if ($wEstateReceipt->isRitou($oAddress) == true ){
+                $oAreaid = $oAreaid."★";
+            }
+
+            //受付番号を英数を半角
+            $oReceiptNoTmp = mb_convert_kana($oReceiptNo,'a'); //英数半角
+
+            //受付日をYYYY/MM/DDに変換
+            $oReceiptDateTmp = mb_substr($oReceiptDate,0, mb_strpos($oReceiptDate,"日"));
+            $oReceiptDateTmp = str_replace("月","/",$oReceiptDateTmp);
+            $oReceiptDateTmp = str_replace("日","",$oReceiptDateTmp);
+            $oReceiptDateTmp = str_replace("受付","",$oReceiptDateTmp);
+            $oReceiptDateTmp = $oYear . "/" . $oReceiptDateTmp;
+
+            //lotnumber英数を半角
+            $oLotnumberTmp = mb_convert_kana($oLotnumber,'a'); //英数半角
+            $oLotnumberTmp = str_replace("--","-",$oLotnumberTmp);
+            //lotnumberの最後がハイフン「-」、漢数字「一」は取る
+            if (mb_substr($oLotnumberTmp,-1)=="-" or mb_substr($oLotnumberTmp,-1)=="一") {
+                //最後の１文字削除
+                $oLotnumberTmp = mb_substr($oLotnumberTmp,0,-1);
+            }
+            //外筆の外を削除して半角
+            $oSotofudeTmp = str_replace("外","", $oSotofude);
+            $oSotofudeTmp = mb_convert_kana($oSotofudeTmp,'a'); //英数半角
+
+            //地番をlotnumberだけ半角
+            $oAddressTmp = $PrefCity.$oChome1.$oChome2.$oLotnumberTmp;
+
+            $searchflag='1';
+
+            $outputBuffer[] = $this->createData3("null",$oAreaid, $oGroup, $oChome1, $oChome2, $oLotnumberTmp, $oAddressTmp,'','','0','', $oSotofudeTmp
+                , $oReceiptDateTmp, $oReceiptSeq, $oPurpose, $oReceiptNoTmp, $searchflag, $oFilename, $oPage, $PrefCity);
+
+        }
+
+        $header = array($this->createHeader3());
+        // ファイル書き込み
+        $savefilename = $this->outputDirPath.'/'. basename($this->filePath, '.xlsx') . '_load.xlsx';
+        $this->reportExcel->write($savefilename, $header, $outputBuffer);
+        $this->logger->cLog('=============================================================');
+        $this->logger->cLog("==== Processing completed. Output File => " . $this->outputCsv .'\n');
+
+        $countLine = $countLine + 1;
+    }
+
     /**
      * 地番向け、アドレス設定
      * @return AddressConfig
@@ -769,6 +993,37 @@ class FormOcrOutput
         //$this->logger->cLog($addrConfig);
 
         return $addrConfig;
+
+    }
+
+    public function createHeader3() {
+
+        $buffer = array();
+        $idx = 0;
+
+        $buffer[$idx++] = 'null';
+        $buffer[$idx++] = 'areaid';
+        $buffer[$idx++] = 'グループ';// 区分（土地、建物）
+        $buffer[$idx++] = 'address1';
+        $buffer[$idx++] = 'address2';
+        $buffer[$idx++] = 'lotnumber';
+        $buffer[$idx++] = 'address';
+        $buffer[$idx++] = 'raddress';//空
+        $buffer[$idx++] = 'raddress1';//空
+        $buffer[$idx++] = 'address_ok_flag';// 固定：0
+        $buffer[$idx++] = 'name';//空
+        $buffer[$idx++] = '外筆';//memo
+        $buffer[$idx++] = '受付日';//regitdate
+        $buffer[$idx++] = '順序';//（単独）、（連続）、（連先）
+        $buffer[$idx++] = '目的'; // 目的
+        $buffer[$idx++] = '受付番号';//数値は半角
+        $buffer[$idx++] = 'seach_flag'; // 固定：1
+        $buffer[$idx++] = 'ファイル名'; // ファイル名
+        $buffer[$idx++] = 'ページ数'; // ページ数
+        $buffer[$idx++] = '都道府県市区'; // 都道府県と市区
+
+
+        return $buffer;
 
     }
 
@@ -800,7 +1055,37 @@ class FormOcrOutput
 
     }
 
-    private function createData2($null_str, $Areaid, $Group, $Chome1, $Chome2, $lotnumber, $Address, $Raddress, $Raddress1, $Address_ok_flag, $name, $Sotofude, $ReceiptDate, $ReceiptSeq, $Purpose, $ReceiptNo, $search_flag) {
+    private function createData3($null_str=null, $Areaid=null, $Group=null, $Chome1=null, $Chome2=null, $lotnumber=null, $Addres=null, $Raddress=null, $Raddress1=null, $Address_ok_flag=null, $name=null, $Sotofude=null
+        , $ReceiptDate=null, $ReceiptSeq=null, $Purpose=null, $ReceiptNo=null, $search_flag=null, $filename=null, $Page=null, $PrefCity=null) {
+
+        $buffer = array();
+        $idx = 0;
+        $buffer[$idx++] = $null_str; // null
+        $buffer[$idx++] = $Areaid; // Areaid
+        $buffer[$idx++] = $Group; // 区分（土地、建物）
+        $buffer[$idx++] = $Chome1; // Chome1
+        $buffer[$idx++] = $Chome2; // Chome2
+        $buffer[$idx++] = $lotnumber; // lotnumber
+        $buffer[$idx++] = $Address; // 地番
+        $buffer[$idx++] = $RAddress; // raddress
+        $buffer[$idx++] = $RAddress1; // raddress1
+        $buffer[$idx++] = $Address_ok_flag; // address_ok_flag
+        $buffer[$idx++] = $name; // name
+        $buffer[$idx++] = $Sotofude; // 外筆
+        $buffer[$idx++] = $ReceiptDate; // 受付日
+        $buffer[$idx++] = $ReceiptSeq; // 順序（単独）、（連続）、（連先）
+        $buffer[$idx++] = $Purpose; // 目的
+        $buffer[$idx++] = $ReceiptNo; // 受付番号
+        $buffer[$idx++] = $search_flag; // search_flag
+        $buffer[$idx++] = $filename; // search_flag
+        $buffer[$idx++] = $Page; // search_flag
+        $buffer[$idx++] = $PrefCity; // search_flag
+
+        return $buffer;
+    }
+
+    private function createData2($null_str=null, $Areaid=null, $Group=null, $Chome1=null, $Chome2=null, $lotnumber=null, $Addres=null, $Raddress=null, $Raddress1=null, $Address_ok_flag=null, $name=null, $Sotofude=null
+        , $ReceiptDate=null, $ReceiptSeq=null, $Purpose=null, $ReceiptNo=null, $search_flag=null) {
 
         $buffer = array();
         $idx = 0;

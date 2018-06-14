@@ -239,41 +239,41 @@ class CsvModelBase {
 		return substr($str, 1); // ２文字目から返す
 	}
 
-	/**
-	 * CSV書き込み
-	 * @param unknown $filePath
-	 * @param unknown $headers
-	 * @param unknown $bodyLines
-	 */
-	public function writeCsv($filePath, $headers, $bodyLines) {
-		// $this->logger->cLog($bodyLines);
-		// ヘッダデータが存在しなければ終了
-		if ($this->isEmpty($headers)) {
-			throw new Exception('HEADER data is empty');
-		}
+    /**
+     * CSV書き込み
+     * @param unknown $filePath
+     * @param unknown $headers
+     * @param unknown $bodyLines
+     */
+    public function writeCsv($filePath, $headers, $bodyLines) {
+        // $this->logger->cLog($bodyLines);
+        // ヘッダデータが存在しなければ終了
+        if ($this->isEmpty($headers)) {
+            throw new Exception('HEADER data is empty');
+        }
 
-		// ボディデータが存在しなければ終了
-		if ($this->isEmpty($bodyLines)) {
-			throw new Exception('BODY data is empty');
-		}
+        // ボディデータが存在しなければ終了
+        if ($this->isEmpty($bodyLines)) {
+            throw new Exception('BODY data is empty');
+        }
 
-		$writeFile = new SplFileObject($filePath, 'w');
-		// ヘッダの書き込み
-		foreach ($headers as $i => $h) {
-			$writeFile->fputcsv($h, $this->delimiter, $this->enclosure);
-		}
+        $writeFile = new SplFileObject($filePath, 'w');
+        // ヘッダの書き込み
+        foreach ($headers as $i => $h) {
+            $writeFile->fputcsv($h, $this->delimiter, $this->enclosure);
+        }
 
-		// データ書き込み
-		foreach ($bodyLines as $no => $line) {
-			$outputLine = $line;
-			/*
-			if (is_array($line)) {
-				$outputLine = implode(',', $line);
-			}
-			$this->logger->cLog($line);*/
-			$writeFile->fputcsv($outputLine, $this->delimiter, $this->enclosure);
-		}
-	}
+        // データ書き込み
+        foreach ($bodyLines as $no => $line) {
+            $outputLine = $line;
+            /*
+            if (is_array($line)) {
+                $outputLine = implode(',', $line);
+            }
+            $this->logger->cLog($line);*/
+            $writeFile->fputcsv($outputLine, $this->delimiter, $this->enclosure);
+        }
+    }
 
 	/**
 	 * lineから、指定のインデックスデータを取得し、つなげて戻す
@@ -304,5 +304,4 @@ class CsvModelBase {
 		}
 		return $result;
 	}
-
 }
