@@ -1085,7 +1085,8 @@ class FormOcrOutput
         return $buffer;
     }
 
-    private function createData2($null_str=null, $Areaid=null, $Group=null, $Chome1=null, $Chome2=null, $lotnumber=null, $Addres=null, $Raddress=null, $Raddress1=null, $Address_ok_flag=null, $name=null, $Sotofude=null
+    private function createData2($null_str=null, $Areaid=null, $Group=null, $Chome1=null, $Chome2=null, $lotnumber=null, $Address=null,
+    		$Raddress=null, $Raddress1=null, $Address_ok_flag=null, $name=null, $Sotofude=null
         , $ReceiptDate=null, $ReceiptSeq=null, $Purpose=null, $ReceiptNo=null, $search_flag=null) {
 
         $buffer = array();
@@ -1097,8 +1098,8 @@ class FormOcrOutput
         $buffer[$idx++] = $Chome2; // Chome2
         $buffer[$idx++] = $lotnumber; // lotnumber
         $buffer[$idx++] = $Address; // 地番
-        $buffer[$idx++] = $RAddress; // raddress
-        $buffer[$idx++] = $RAddress1; // raddress1
+        $buffer[$idx++] = $Raddress; // raddress
+        $buffer[$idx++] = $Raddress1; // raddress1
         $buffer[$idx++] = $Address_ok_flag; // address_ok_flag
         $buffer[$idx++] = $name; // name
         $buffer[$idx++] = $Sotofude; // 外筆

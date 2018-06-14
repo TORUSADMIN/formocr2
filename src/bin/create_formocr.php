@@ -124,5 +124,5 @@ $output1Path = realpath($options['o']);
 fileCheckAndExit($report1Path);
 
 $logic = new FormOcrOutput($report1Path, $output1Path);
-$logic->processing();
+$logic->processing2();
 
